@@ -26,6 +26,10 @@ const data = {
       url: "/dashboard/user",
     },
     {
+      title: "Product",
+      url: "/dashboard/product",
+    },
+    {
       title: "Master Data",
       url: "#",
       items: [
