@@ -80,7 +80,7 @@ export async function action(req: ActionFunctionArgs) {
             cb_url: req.context.cloudflare.env.WEBHOOK_URL
         }
 
-        if(process.env.NODE_ENV !== 'production'){
+        if(process.env.NODE_ENV === 'development'){
             payload = {...payload, testing:true, customer_no:"087800001230", buyer_sku_code: "xld10"}
         }
         const response = await d.postRequest(payload)

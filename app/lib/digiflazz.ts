@@ -1,4 +1,4 @@
-import { createHash } from 'crypto'
+import crypto from 'node:crypto';
 
 export class Digiflazz {
     url: string;
@@ -12,7 +12,7 @@ export class Digiflazz {
     }
 
     generateMD5(input: string) {
-        return createHash('md5').update(input).digest('hex');
+        return crypto.createHash('md5').update(input).digest('hex');
     }
 
     getSign(cmd: string) {

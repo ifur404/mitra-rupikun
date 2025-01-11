@@ -10,6 +10,8 @@ export async function loader(req: LoaderFunctionArgs) {
  
   const keyKV = "saldo"
   let saldo = 0
+  // await req.context.cloudflare.env.KV.delete(keyKV)
+  // console.log(process.env)
   const cache = await req.context.cloudflare.env.KV.get(keyKV)
   if(cache){
     saldo = Number(cache) || 0
@@ -17,7 +19,9 @@ export async function loader(req: LoaderFunctionArgs) {
     const {DIGI_USERNAME, DIGI_APIKEY} = req.context.cloudflare.env
     const d = new Digiflazz(DIGI_USERNAME, DIGI_APIKEY)
     saldo = await d.getSaldo()
-    await req.context.cloudflare.env.KV.put(keyKV, saldo.toString())
+    await req.context.cloudflare.env.KV.put(keyKV, saldo.toString(), {
+      expirationTtl: 60
+    })
   }
   return {
     saldo
