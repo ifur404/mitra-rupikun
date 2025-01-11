@@ -70,7 +70,7 @@ export default function AdminPage() {
             </BreadcrumbList>
           </Breadcrumb>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="md:p-4 px-0">
           <Outlet />
         </div>
       </SidebarInset>

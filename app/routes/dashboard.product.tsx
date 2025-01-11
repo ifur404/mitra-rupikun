@@ -409,7 +409,7 @@ function RenderForm({ data }: { data?: TData }) {
 }
 
 function AddData() {
-  return <SheetAction title="Add Data" triger={<Button><Plus className="mr-2" /> Add Data</Button>}>
+  return <SheetAction title="Add Data" triger={<Button><Plus /> Add Data</Button>}>
     <input name="intent" value="ADD_DATA" hidden readOnly />
     <RenderForm />
     <div>

@@ -8,8 +8,6 @@ import {
 } from "@remix-run/react";
 
 import styles from "./tailwind.css?url"
-import Footer from "./components/footer";
-import Header from "./components/header";
 import { Toaster } from "sonner";
 
 export const links: LinksFunction = () => [
@@ -31,7 +29,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <Meta />
         <Links />
       </head>
