@@ -121,16 +121,16 @@ const collums: ColumnDef<TData>[] = [
     },
     {
         id: "amount",
-        accessorKey: 'amount',
+        accessorFn: (d) => formatCurrency(d?.amount?.toString() || "0"),
         header: "Amount"
     },
     {
         id: "status",
-        accessorKey: 'status',
+        accessorFn: (d)=> CHOICE_STATUS.find(e=>e.value===d.status)?.label || "-",
         header: "Status"
     },
     {
-        cell: (d) => <OpenDetail str={d.row.original.data || ''} />,
+        cell: (d) => <OpenDetail str={d.row.original.data || ''} view="textarea" />,
         header: "Data"
     },
     {
