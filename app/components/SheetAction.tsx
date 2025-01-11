@@ -5,10 +5,9 @@ import { ScrollArea } from "./ui/scroll-area";
 import { useFetcher } from "@remix-run/react";
 import { toast } from "sonner";
 
-export default function SheetAction({ triger, title, children }: { triger: ReactNode, title: string, children: ReactNode }) {
-    const key = "ADD_DATA"
+export default function SheetAction({ triger, title, children, keyReq="ADD_DATA" }: { triger: ReactNode, title: string, children: ReactNode, keyReq?:string }) {
     const [show, setShow] = useState(false)
-    const fetcher = useFetcher<{error?:any; success: true}>({key})
+    const fetcher = useFetcher<{error?:any; success: true}>({key:keyReq})
     const loading = fetcher.state !== "idle"
 
     function toggleShow(){

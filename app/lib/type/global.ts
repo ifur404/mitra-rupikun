@@ -8,3 +8,8 @@ export type TData<T> = {
         pages: number,
     }
 }
+
+export type TSelectPick = {
+    value: string;
+    label: string;
+}

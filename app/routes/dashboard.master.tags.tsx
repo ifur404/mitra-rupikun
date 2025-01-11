@@ -2,10 +2,11 @@ import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/cloudfl
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { ColumnDef } from "@tanstack/react-table";
 import { and, eq, isNull, isNotNull, or, like, sql, desc, getTableColumns } from "drizzle-orm";
-import { Plus, Search, Trash } from "lucide-react";
+import { Edit, Plus, Search, Trash } from "lucide-react";
 import { ActionDelete } from "~/components/ActionDelete";
 import { DataTable } from "~/components/datatable";
 import FormSearch from "~/components/FormSearch";
+import OpenDetail from "~/components/OpenDetail";
 import { PaginationPage } from "~/components/pagination-page";
 import SheetAction from "~/components/SheetAction";
 import { Button } from "~/components/ui/button";
@@ -70,6 +71,15 @@ export async function action(req:ActionFunctionArgs) {
         updated_by: user.id,
       })
     }
+    if(intent==="EDIT_DATA"){
+      const data = Object.fromEntries(formData)
+      const id = Number(data.id)
+      await mydb.update(tagTable).set({
+        ...data,
+        updated_by: user.id,
+        updated_at: new Date().getTime(),
+      }).where(eq(tagTable.id, id))
+    }
     
     if(intent==="DELETE"){
       const id = Number(formData.get("id"))
@@ -83,10 +93,11 @@ export async function action(req:ActionFunctionArgs) {
     return {error: "Failed"}
   }
 }
-
-const collums: ColumnDef<typeof tagTable.$inferSelect>[] = [
+type TData = typeof tagTable.$inferSelect
+const collums: ColumnDef<TData>[] = [
   {
     cell: (d)=> <div className="flex gap-2">
+      <ButtonEdit data={d.row.original}/>
       <ActionDelete id={d.row.original.id}>
         <Button size="sm"><Trash size={20}/></Button>
       </ActionDelete>
@@ -107,6 +118,11 @@ const collums: ColumnDef<typeof tagTable.$inferSelect>[] = [
     id: "type",
     accessorKey: 'type',
     header: "Type"
+  },
+  {
+    id: "description",
+    cell: (d)=> <OpenDetail str={d.row.original?.description || ''}/>,
+    header: "Description"
   },
   {
     id: "created_at",
@@ -144,21 +160,35 @@ export default function dashboardmastertags() {
   )
 }
 
+function ButtonEdit({ data }: { data: TData }) {
+
+  return <SheetAction keyReq={`EDIT_${data.id}`} title="Edit Data" triger={<Button size="sm"><Edit size={20} /></Button>}>
+    <input name="intent" value="EDIT_DATA" hidden readOnly />
+    <input name="id" value={data.id} hidden readOnly />
+    <RenderForm data={data}/>
+  </SheetAction>
+}
 
 function AddData(){
   return <SheetAction title="Add Data" triger={<Button><Plus className="mr-2"/> Add Data</Button>}>
     <input name="intent" value="ADD_DATA" hidden readOnly/>
-    <div>
+    <RenderForm />
+  </SheetAction>
+}
+
+function RenderForm({data}:{data?:TData}){
+  return <>
+  <div>
       <Label htmlFor="name">Name</Label>
-      <Input name="name" placeholder="Name"/>
+      <Input name="name" placeholder="Name" defaultValue={data?.name || ''}/>
     </div>
     <div>
       <Label htmlFor="type">Type</Label>
-      <Input name="type" placeholder="type"/>
+      <Input name="type" placeholder="type" defaultValue={data?.type || ''}/>
     </div>
     <div>
       <Label htmlFor="description">Description</Label>
-      <Textarea name="description" placeholder="Description"/>
+      <Textarea name="description" placeholder="Description" defaultValue={data?.description || ''} />
     </div>
-  </SheetAction>
+  </>
 }
