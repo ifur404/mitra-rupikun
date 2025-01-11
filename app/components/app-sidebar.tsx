@@ -30,12 +30,27 @@ const data = {
       url: "/dashboard/product",
     },
     {
+      title: "Transaction",
+      url: "/dashboard/transaction",
+    },
+    {
       title: "Master Data",
       url: "#",
       items: [
         {
           title: "Tags",
           url: "/dashboard/master/tags",
+          isActive: false
+        },
+      ],
+    },
+    {
+      title: "Digiflazz",
+      url: "#",
+      items: [
+        {
+          title: "Webhook",
+          url: "/dashboard/digiflazz/webhook",
           isActive: false
         },
       ],

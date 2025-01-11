@@ -61,6 +61,7 @@ export const productTagTable = sqliteTable('product_tag', {
 
 export const transactionTable = sqliteTable('transaction', {
     id: integer().primaryKey(),
+    key: text().unique().$default(()=> crypto.randomUUID().toString()),
     product_id: integer().references(() => productTable.id, {
         onDelete: "set null", 
     }),
@@ -81,3 +82,10 @@ export const transactionTable = sqliteTable('transaction', {
         onDelete: "set null",
     }),
 });
+
+
+export const webhookTable = sqliteTable('webhook', {
+    id: integer().primaryKey(),
+    data: text(),
+    created_at: integer().$default(() => new Date().getTime()),
+})

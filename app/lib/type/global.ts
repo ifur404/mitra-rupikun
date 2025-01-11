@@ -13,3 +13,5 @@ export type TSelectPick = {
     value: string;
     label: string;
 }
+
+export type TResponse = {error: string} | {success: boolean}

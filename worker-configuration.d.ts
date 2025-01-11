@@ -7,5 +7,10 @@ interface Env {
 	GOOGLE_CLIENT_ID: string;
 	GOOGLE_CLIENT_SECRET: string;
 	GOOGLE_REDIRECT_URL: string;
+	SECRET_DIGIFLAZZ: string;
+	WEBHOOK_DIGIFLAZZ: string;
+	WEBHOOK_URL: string;
+	DIGI_USERNAME: string;
+	DIGI_APIKEY: string;
 	DB: D1Database;
 }
