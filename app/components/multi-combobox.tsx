@@ -41,9 +41,6 @@ export function MultiComboBox({ name, pathApi, defaultValue=[] }: { name: string
         }
     }, [open])
     
-    useEffect(()=> {
-        setValue(defaultValue)
-    },[defaultValue])
 
     if (isDesktop) {
         return (

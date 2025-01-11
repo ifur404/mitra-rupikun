@@ -28,7 +28,5 @@ export async function loader(req: LoaderFunctionArgs) {
         .offset(filter.offset)
         .orderBy(desc(productTagTable.created_at))
 
-    console.log(data)
-
     return Response.json(data)
 }
