@@ -8,3 +8,29 @@ content-type: application/json
     "name": "sample",
     "time": "Wed, 21 Oct 2015 18:27:50 GMT"
 }
+
+###
+POST http://localhost:5173/webhookyaaaa HTTP/1.1
+Host: localhost:4567
+X-Hub-Signature: sha1=7d6f016c23d03b696e76dada91c07f178cc0af4d
+User-Agent: Digiflazz-Hookshot
+Content-Type: application/json
+Content-Length: 445
+X-Digiflazz-Event: create
+
+{
+    "data": {
+        "trx_id": "5ca22497cc6d0f965d9f84ac",
+        "ref_id": "30467470",
+        "customer_no": "081280556115",
+        "buyer_sku_code": "ovo100",
+        "message": "Sukses",
+        "status": "Sukses",
+        "rc": "00",
+        "buyer_last_saldo": 326719460,
+        "sn": "SEPTIAPAR/20190401214753214742",
+        "price": 199800,
+        "tele": "@telegram",
+        "wa": "081234512345"
+    }
+}

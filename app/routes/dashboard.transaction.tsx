@@ -81,7 +81,7 @@ export async function action(req: ActionFunctionArgs) {
         }
 
         if(process.env.NODE_ENV === 'development'){
-            payload = {...payload, testing:true, customer_no:"087800001230", buyer_sku_code: "xld10"}
+            payload = {...payload, testing:true, customer_no:"087800001233", buyer_sku_code: "xld10"}
         }
         const response = await d.postRequest(payload)
         const res = await mydb.insert(transactionTable).values({

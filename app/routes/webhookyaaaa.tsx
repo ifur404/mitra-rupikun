@@ -6,6 +6,7 @@ import crypto from 'node:crypto';
 import { eq } from "drizzle-orm";
 
 function isValidate(body: string, sign: string, secret: string) {
+    console.log(body, sign, secret)
     const signature = crypto
         .createHmac("sha1", secret)
         .update(body)
@@ -18,45 +19,46 @@ function isValidate(body: string, sign: string, secret: string) {
 }
 
 export async function action(req: ActionFunctionArgs) {
-    const rawBody = await req.request.text();
-    const receivedSignature = req.request.headers.get("X-Hub-Signature") as string;
-    const isValid = isValidate(rawBody, req.context.cloudflare.env.SECRET_DIGIFLAZZ, receivedSignature)
+    // const rawBody = await req.request.json();
+    // const receivedSignature = req.request.headers.get("X-Hub-Signature") as string;
+    // const isValid = isValidate(rawBody, req.context.cloudflare.env.SECRET_DIGIFLAZZ, receivedSignature)
+    // if (isValid) {
+    // const {data} = JSON.parse(rawBody) as {data: TWebhookData};
+    const {data} = await req.request.json() as {data: TWebhookData};
 
-    if (isValid) {
-        const {data} = JSON.parse(rawBody) as {data: TWebhookData};
-        const timestamp = new Date().toISOString();
-        const headers = Object.fromEntries(req.request.headers.entries());
-        const clientIp = headers["cf-connecting-ip"] || headers["x-forwarded-for"] || "unknown";
+    const timestamp = new Date().toISOString();
+    const headers = Object.fromEntries(req.request.headers.entries());
+    const clientIp = headers["cf-connecting-ip"] || headers["x-forwarded-for"] || "unknown";
 
-        const webhookPayload = {
-            formdata: data,
-            headers: headers,
-            timestamp,
-            clientIp,
-        };
-        const mydb = db(req.context.cloudflare.env.DB)
+    const webhookPayload = {
+        formdata: data,
+        headers: headers,
+        timestamp,
+        clientIp,
+    };
+    const mydb = db(req.context.cloudflare.env.DB)
 
-        await mydb.insert(webhookTable).values({
-            data: JSON.stringify(webhookPayload),
-        });
+    await mydb.insert(webhookTable).values({
+        data: JSON.stringify(webhookPayload),
+    });
 
-        if(data.ref_id){
-            await mydb.update(transactionTable).set({
-                status: CHOICE_STATUS.find(e=>e.label===data.status)?.value || 4,
-                updated_at: new Date().getTime(),
-            }).where(eq(transactionTable.key, data.ref_id))
+    if(data.ref_id){
+        await mydb.update(transactionTable).set({
+            status: CHOICE_STATUS.find(e=>e.label===data.status)?.value || 4,
+            updated_at: new Date().getTime(),
+        }).where(eq(transactionTable.key, data.ref_id))
 
-            await req.context.cloudflare.env.KV.put("saldo", data.buyer_last_saldo.toString(), {
-                expirationTtl: 60
-            })
-        }
-
-        return Response.json({ status: "success", message: "Webhook received" });
+        await req.context.cloudflare.env.KV.put("saldo", data.buyer_last_saldo.toString(), {
+            expirationTtl: 60
+        })
     }
 
-    return Response.json(
-        { status: "error", message: "Invalid signature" },
-    );
+    return Response.json({ status: "success", message: "Webhook received" });
+    // }
+
+    // return Response.json(
+    //     { status: "error", message: "Invalid signature" },
+    // );
 }
 
 export async function loader(req: LoaderFunctionArgs) {
