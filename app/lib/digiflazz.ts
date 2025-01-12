@@ -6,7 +6,7 @@ export class Digiflazz {
     apikey: string;
 
     constructor(username: string, apikey: string) {
-        this.url = 'https://api.digiflazz.com/v1/'
+        this.url = 'https://digi.rupikun.com/v1/'
         this.username = username
         this.apikey = apikey
     }
