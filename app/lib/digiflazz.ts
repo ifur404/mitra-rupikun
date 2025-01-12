@@ -118,5 +118,21 @@ export const CHOICE_STATUS = [
     { value: 0, label: 'Sukses' },
     { value: 1, label: 'Pending' },
     { value: 3, label: 'Gagal' },
-    { value: 4, label: 'Gagal' },
+    { value: 4, label: 'Problem' },
 ];
+
+
+export type TWebhookData = {
+  trx_id: string;
+  ref_id: string;
+  customer_no: string;
+  buyer_sku_code: string;
+  message: string;
+  status: string;
+  rc: string;
+  buyer_last_saldo: number;
+  sn: string;
+  price: number;
+  tele: string;
+  wa: string;
+}
