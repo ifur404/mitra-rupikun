@@ -85,6 +85,7 @@ export async function action(req: ActionFunctionArgs) {
         }
         const response = await d.postRequest(payload)
         const res = await mydb.insert(transactionTable).values({
+            key: ref_id,
             product_id: product.id,
             user_id: user.id,
             amount: product.price_sell,
