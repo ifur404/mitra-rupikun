@@ -1,20 +1,36 @@
-import { LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { db } from "~/drizzle/client.server";
 import { webhookTable } from "~/drizzle/schema";
 
-export async function loader(req: LoaderFunctionArgs) {
-    const timestamp = new Date().toISOString(); // Current timestamp
-    const headers = Object.fromEntries(req.request.headers.entries());
+export async function action({ request, context }: ActionFunctionArgs) {
+    const timestamp = new Date().toISOString();
+    const headers = Object.fromEntries(request.headers.entries());
+    const contentType = request.headers.get("Content-Type");
+
+    const clientIp = headers["cf-connecting-ip"] || headers["x-forwarded-for"] || "unknown";
+
+    let formData = {};
+    if (contentType === "application/x-www-form-urlencoded" || contentType?.includes("multipart/form-data")) {
+        const parsedFormData = Object.fromEntries(await request.formData());
+        formData = parsedFormData;
+    } else {
+        formData = await request.json() as any;
+    }
 
     const webhookPayload = {
-        formdata: Object.fromEntries(await req.request.formData()),
+        formdata: formData,
         headers: headers,
-        timestamp
+        timestamp,
+        clientIp,
     };
 
-    await db(req.context.cloudflare.env.DB).insert(webhookTable).values({
-        data: JSON.stringify(webhookPayload), 
+    await db(context.cloudflare.env.DB).insert(webhookTable).values({
+        data: JSON.stringify(webhookPayload),
     });
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    return Response.json({ success: true });
+}
+
+export async function loader(req:LoaderFunctionArgs) {
+    return Response.json({"status": "ok"})
 }

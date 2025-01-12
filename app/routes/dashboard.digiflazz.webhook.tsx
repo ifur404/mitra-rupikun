@@ -57,7 +57,7 @@ const collums: ColumnDef<TData>[] = [
     header: "ID"
   },
   {
-    cell: (d) => <OpenDetail str={d.row.original.data || ''} />,
+    cell: (d) => <OpenDetail str={d.row.original.data || ''} view="textarea"/>,
     header: "Data"
   },
   {
