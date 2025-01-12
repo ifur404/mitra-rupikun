@@ -61,13 +61,13 @@ export const productTagTable = sqliteTable('product_tag', {
 
 export const transactionTable = sqliteTable('transaction', {
     id: integer().primaryKey(),
-    key: text().unique().$default(()=> crypto.randomUUID().toString()),
+    key: text().unique().$default(() => crypto.randomUUID().toString()),
     product_id: integer().references(() => productTable.id, {
-        onDelete: "set null", 
+        onDelete: "set null",
     }),
     user_id: integer().references(() => userTable.id, {
-        onDelete: "set null", 
-    }), 
+        onDelete: "set null",
+    }),
     amount: integer(),
     price: integer(),
     profit: integer().default(0),
@@ -77,7 +77,7 @@ export const transactionTable = sqliteTable('transaction', {
     created_at: integer().$default(() => new Date().getTime()),
     updated_at: integer().$default(() => new Date().getTime()),
     created_by: integer().references(() => userTable.id, {
-        onDelete: "set null", 
+        onDelete: "set null",
     }),
     updated_by: integer().references(() => userTable.id, {
         onDelete: "set null",
@@ -90,3 +90,19 @@ export const webhookTable = sqliteTable('webhook', {
     data: text(),
     created_at: integer().$default(() => new Date().getTime()),
 })
+
+
+export const ledgerTable = sqliteTable('ledger', {
+    id: integer().primaryKey(), // Unique identifier for each transaction
+    key: integer().notNull(), // Unique key for relational grouping (e.g., userId or accountId)
+    before: integer().default(0), // Balance before the transaction
+    mutation: integer().default(0), // Change in balance (positive or negative)
+    after: integer().notNull(), // Balance after the transaction
+    type: text().notNull(), // Type of transaction (e.g., 'topup', 'purchase')
+    data: text(), // JSON-encoded details for flexibility (e.g., {"referenceId": "abc123"})
+    created_by: integer().references(() => userTable.id, {
+        onDelete: "set null", // Keep the transaction but remove user reference if user is deleted
+    }),
+    created_at: integer().$default(() => new Date().getTime()), // Timestamp of the transaction
+});
+

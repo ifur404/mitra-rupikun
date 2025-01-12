@@ -50,6 +50,13 @@
       "when": 1736678548250,
       "tag": "0006_mighty_bedlam",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1736696731194,
+      "tag": "0007_legal_starbolt",
+      "breakpoints": true
     }
   ]
 }

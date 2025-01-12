@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/cloudflare";
-import { Link, useLoaderData } from "@remix-run/react";
+import { ClientLoaderFunctionArgs, Link, useLoaderData } from "@remix-run/react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "~/components/datatable";
 import { formatCurrency } from "~/components/InputCurrency";
@@ -25,6 +25,7 @@ export async function loader(req: LoaderFunctionArgs) {
 
   return product
 }
+
 
 type TData = typeof productTable.$inferSelect
 const collums: ColumnDef<TData>[] = [

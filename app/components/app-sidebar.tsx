@@ -62,21 +62,25 @@ const data = {
   ],
 }
 
+export function ShowAccount({user}:{user:TAuth,}){
+  return <div className="flex gap-2 px-4 py-2 mt-4">
+  <Avatar>
+      <AvatarImage src={user.picture || ''} />
+      <AvatarFallback>{truncateString(user.name, 2)}</AvatarFallback>
+  </Avatar>
+  <div>
+      <div>{user.name}</div>
+      <p className="text-xs truncate">{user.email}</p>
+      <Link to="/logout"> <Button size="sm" variant="outline" className="py-1 px-4 mt-2 text-xs">Logout</Button></Link>
+  </div>
+</div>
+}
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar> & { user: TAuth }) {
   return (
     <Sidebar variant="floating" {...props}>
       <SidebarHeader className="border-b">
-        <div className="flex gap-2 px-4 py-2">
-          <Avatar>
-            <AvatarImage src={props.user.picture || ''} />
-            <AvatarFallback>{truncateString(props.user.name, 2)}</AvatarFallback>
-          </Avatar>
-          <div>
-            <div>{props.user.name}</div>
-            <p className="text-xs">{truncateString(props.user.email, 20)}</p>
-            <Link to="/logout"> <Button size="sm" variant="outline" className="py-1 px-4 mt-2 text-xs">Logout</Button></Link>
-          </div>
-        </div>
+        <ShowAccount user={props.user} />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
