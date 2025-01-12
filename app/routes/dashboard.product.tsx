@@ -266,17 +266,13 @@ function ShowProvider({ data }: { data: TData }) {
   const [value, setValue] = useState<TPriceList | undefined>(defaultP?.digiflazz)
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
-  const placeholder = defaultP.digiflazz?.product_name || '-'
+  const placeholder = `${defaultP.digiflazz?.product_name || ''} - ${defaultP.digiflazz?.seller_name}` 
 
   useEffect(() => {
     if (open && fetcher.data === undefined) {
       fetcher.load("/api/digiflazz/pricelist")
     }
   }, [open])
-
-  useEffect(()=> {
-
-  },[])
 
   if (isDesktop) {
     return (
