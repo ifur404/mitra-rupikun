@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/cloudflare"
-import { ClientLoaderFunctionArgs, Link, MetaFunction, Outlet, useLoaderData, useLocation, useNavigation } from "@remix-run/react"
+import { Link, MetaFunction, Outlet, useLoaderData, useLocation } from "@remix-run/react"
 import { Suspense } from "react"
 import { AppSidebar } from "~/components/app-sidebar"
 import {
@@ -15,12 +15,18 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "~/components/ui/sidebar"
+import { onlyStaff } from "~/lib/auth.server"
 
 export const meta: MetaFunction = () => {
   return [
     { title: "Dashboard" },
   ];
 };
+
+export async function loader(req: LoaderFunctionArgs) {
+  const user = onlyStaff(req)
+  return user
+}
 
 function generateBreadcrumb(url: string) {
   const pathSegments = url.split('/').filter(segment => segment);
@@ -41,6 +47,7 @@ function generateBreadcrumb(url: string) {
 export default function AdminPage() {
   const navigation = useLocation()
   const breadcrumb = generateBreadcrumb(navigation.pathname)
+  const user = useLoaderData<typeof loader>()
 
   return <Suspense>
     <SidebarProvider
@@ -50,7 +57,7 @@ export default function AdminPage() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar />
+      <AppSidebar user={user}/>
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 px-4">
           <SidebarTrigger className="-ml-1" />
@@ -71,7 +78,7 @@ export default function AdminPage() {
           </Breadcrumb>
         </header>
         <div className="md:p-4 px-0">
-          <Outlet />
+          <Outlet context={user}/>
         </div>
       </SidebarInset>
     </SidebarProvider>

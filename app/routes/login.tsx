@@ -33,10 +33,13 @@ export async function loader(req: LoaderFunctionArgs) {
         code,
     }
 
-    const session = await cookie.parse(req.request.headers.get("Cookie"));
+    const session: TAuth | undefined = await cookie.parse(req.request.headers.get("Cookie"));
 
     if (session?.id) {
-        throw redirect(redirectSuccess);
+        if(session.is_staff){
+            throw redirect(redirectSuccess);
+        }
+        throw redirect("/panel")
     }
 
     const redirect_url = req.context.cloudflare.env.GOOGLE_REDIRECT_URL

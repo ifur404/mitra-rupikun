@@ -70,6 +70,7 @@ export const transactionTable = sqliteTable('transaction', {
     }), 
     amount: integer(),
     price: integer(),
+    profit: integer().default(0),
     data: text(), //json struktur
     status: integer().default(1), // 0 done, 1 pending, 3 failed, 4 problem
     date: integer().$default(() => new Date().getTime()),

@@ -89,6 +89,7 @@ export async function action(req: ActionFunctionArgs) {
             product_id: product.id,
             user_id: user.id,
             amount: product.price_sell,
+            profit: response.price - (product.price_sell || 0),
             price: product.price_sell,
             data: JSON.stringify({
                 provider,
@@ -116,14 +117,14 @@ const collums: ColumnDef<TData>[] = [
         header: "ID"
     },
     {
-        id: "price",
-        accessorFn: (d) => formatCurrency(d?.price?.toString() || "0"),
-        header: "Price"
-    },
-    {
         id: "amount",
         accessorFn: (d) => formatCurrency(d?.amount?.toString() || "0"),
         header: "Amount"
+    },
+    {
+        id: "Profit",
+        accessorFn: (d) => formatCurrency(d?.profit?.toString() || "0"),
+        header: "Profit"
     },
     {
         id: "status",
