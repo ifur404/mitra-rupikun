@@ -1,25 +1,49 @@
-import { Link, useRouteLoaderData } from "@remix-run/react"
-import {loader} from './panel'
+import { Link, useLoaderData, useRouteLoaderData } from "@remix-run/react"
 import { ChevronLeft, Smartphone, Wifi, Zap } from 'lucide-react'
+import { Home, List, User } from "lucide-react";
+import { LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { allowAny } from "~/lib/auth.server";
+import { db } from "~/drizzle/client.server";
+import { desc, eq } from "drizzle-orm";
+import { ledgerTable } from "~/drizzle/schema";
+import { formatCurrency } from "~/components/InputCurrency";
 
 const services = [
   { icon: Smartphone, label: "Pulsa", badge: "" },
-  { icon: Wifi, label: "Paket Data", badge: "" },
-  { icon: Zap, label: "PLN", badge: "" },
+  // { icon: Wifi, label: "Paket Data", badge: "" },
+  // { icon: Zap, label: "PLN", badge: "" },
+]
+const BOTTONNAVIGATION = [
+  { icon: Home, label: "Home", url: '/panel' },
+  { icon: List, label: "Transaksi", url: '/panel/transaksi' },
+  { icon: User, label: "Akun", url: '/panel/akun' },
 ]
 
-export default function panelindex() {
-  const user = useRouteLoaderData<typeof loader>("routes/panel")
-  if(!user) return null
+export async function loader(req: LoaderFunctionArgs) {
+  const user = await allowAny(req)
+  const mydb = db(req.context.cloudflare.env.DB)
+  const ledger = await mydb.query.ledgerTable.findFirst({
+    where: eq(ledgerTable.key, user.id),
+    orderBy: desc(ledgerTable.created_at)
+  })
+
+  return {
+    user,
+    saldo: ledger?.after || 0
+  }
+}
+
+export default function PanelHome() {
+  const loaderData = useLoaderData<typeof loader>()
 
   return (
     <>
       <div>
-        Halo {user.name}
+        Halo {loaderData.user.name}
       </div>
       <div className="grid grid-cols-2 mt-4 px-4">
         <div>
-          <div className="text-2xl font-bold">Rp. 10000</div>
+          <div className="text-2xl font-bold">{formatCurrency(loaderData.saldo.toString())}</div>
           <p className="text-xs">Saldo</p>
         </div>
       </div>
@@ -27,32 +51,59 @@ export default function panelindex() {
       <div className="grid grid-cols-grid grid-cols-3 gap-4 w-full mt-4 border rounded-lg p-4">
         {services.map((service, index) => {
           const Icon = service.icon
+          const url = `${service.label.toLowerCase()}`
           return (
-            <div key={index} className="flex flex-col items-center gap-2">
-              <div className="relative">
-                <div className="w-12 h-12 flex items-center justify-center bg-blue-100 rounded-lg">
-                  <Icon className="w-6 h-6 text-gray-600" />
+            <Link to={url}>
+              <div key={index} className="flex flex-col items-center gap-2">
+                <div className="relative">
+                  <div className="w-12 h-12 flex items-center justify-center bg-blue-100 rounded-lg">
+                    <Icon className="w-6 h-6 text-gray-600" />
+                  </div>
+                  {service.badge && (
+                    <span className="absolute -top-2 -right-2 px-2 py-0.5 text-xs text-white bg-red-500 rounded-full">
+                      {service.badge}
+                    </span>
+                  )}
                 </div>
-                {service.badge && (
-                  <span className="absolute -top-2 -right-2 px-2 py-0.5 text-xs text-white bg-red-500 rounded-full">
-                    {service.badge}
-                  </span>
-                )}
+                <span className="text-sm text-center">{service.label}</span>
               </div>
-              <span className="text-sm text-center">{service.label}</span>
-            </div>
+            </Link>
           )
         })}
       </div>
-
+      <BottonNav />
     </>
   )
 }
 
 
-export function HeaderBack({title}:{title: string}){
+export function HeaderBack({ title, back_to="/panel" }: { title: string; back_to?: string }) {
   return <div className="flex items-center gap-4 px-4 py-2 rounded-lg border ">
-    <Link to="/panel" ><ChevronLeft /></Link>
+    <Link to={back_to} ><ChevronLeft /></Link>
     <div className="text-xl">{title}</div>
+  </div>
+}
+
+export function BottonNav() {
+  return <div className="fixed bottom-0 left-0 w-full ">
+    <div className="max-w-md mx-auto bg-white">
+      <div className="grid grid-cols-3 gap-4 px-4 py-2 border rounded-lg">
+        {BOTTONNAVIGATION.map((m, index) => {
+          const Icon = m.icon
+          return (
+            <Link to={m.url} key={index}>
+              <div className="flex flex-col items-center">
+                <div className="relative">
+                  <div className="w-8 h-8 flex items-center justify-center rounded-lg">
+                    <Icon className="w-6 h-6 text-gray-600" />
+                  </div>
+                </div>
+                <span className="text-xs text-center">{m.label}</span>
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+    </div>
   </div>
 }

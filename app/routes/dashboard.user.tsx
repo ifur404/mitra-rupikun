@@ -60,7 +60,7 @@ export async function loader(req: LoaderFunctionArgs) {
   }
 }
 
-export type TLedgerData = {
+export type TFormTopUp = {
   note: string;
 }
 
@@ -79,7 +79,7 @@ export async function action(req: ActionFunctionArgs) {
     })
     const before_balance = before?.id ? Number(before.before) : 0
 
-    const topup: TLedgerData = {
+    const topup: TFormTopUp = {
       note: formData.get("note")?.toString() || ""
     }
 

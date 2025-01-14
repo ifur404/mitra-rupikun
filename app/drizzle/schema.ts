@@ -94,6 +94,7 @@ export const webhookTable = sqliteTable('webhook', {
 
 export const ledgerTable = sqliteTable('ledger', {
     id: integer().primaryKey(), // Unique identifier for each transaction
+    uuid: text().$default(()=> crypto.randomUUID()), // public url
     key: integer().notNull(), // Unique key for relational grouping (e.g., userId or accountId)
     before: integer().default(0), // Balance before the transaction
     mutation: integer().default(0), // Change in balance (positive or negative)

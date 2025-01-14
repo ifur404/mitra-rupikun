@@ -63,6 +63,34 @@ export class Digiflazz {
         const data = await req.json() as { data: TResponseTransaction }
         return data.data
     }
+    
+
+    async processTransactionPulsa({
+        sku,
+        phone_number,
+        webhook_url
+    }:{
+        sku:string;
+        phone_number: string;
+        webhook_url: string
+    }){
+        const ref_id = crypto.randomUUID()
+        let payload: TRequestTransaction = {
+            username: this.username,
+            buyer_sku_code: sku,
+            customer_no: phone_number,
+            ref_id,
+            sign: this.getSign(ref_id),
+            cb_url: webhook_url
+        }
+
+        if (process.env.NODE_ENV === 'development') {
+            payload = { ...payload, testing: true, customer_no: "087800001233", buyer_sku_code: "xld10" }
+        }
+
+        const response = await this.postRequest(payload)
+        return response
+    }
 }
 
 export type TPriceList = {
