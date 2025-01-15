@@ -57,6 +57,11 @@ const data = {
           url: "/dashboard/digiflazz/webhook",
           isActive: false
         },
+        {
+          title: "Cache",
+          url: "/dashboard/digiflazz/cache",
+          isActive: false
+        },
       ],
     },
   ],

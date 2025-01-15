@@ -16,6 +16,7 @@ import { desc, eq } from "drizzle-orm";
 import { ledgerTable } from "~/drizzle/schema";
 import { LedgerTypeEnum } from "~/data/enum";
 import { toast } from "sonner";
+import { CACHE_KEYS } from "~/data/cache";
 
 const optionMobileOperators = [
     { label: "Telkomsel", value: "telkomsel", pattern: /^(0)?(811|812|813|821|822|823|852|853)\d{5,9}$/ },
@@ -39,10 +40,9 @@ function identifyOperator(phoneNumber: string) {
 }
 
 async function getPricelist(env: Env) {
-    const key_cache = 'pulsa'
     const { DIGI_USERNAME, DIGI_APIKEY } = env
     const cache = env.KV
-    const cache_data = await cache.get(key_cache)
+    const cache_data = await cache.get(CACHE_KEYS.PULSA)
     if (cache_data) {
         return JSON.parse(cache_data) as TPriceList[]
     }
@@ -52,7 +52,7 @@ async function getPricelist(env: Env) {
         category: "Pulsa",
     })
     if (product.length > 0) {
-        await cache.put(key_cache, JSON.stringify(product))
+        await cache.put(CACHE_KEYS.PULSA, JSON.stringify(product))
         return product
     }
     return []
