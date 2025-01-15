@@ -53,20 +53,18 @@ export default function PanelHome() {
           const Icon = service.icon
           const url = `${service.label.toLowerCase()}`
           return (
-            <Link to={url}>
-              <div key={index} className="flex flex-col items-center gap-2">
-                <div className="relative">
-                  <div className="w-12 h-12 flex items-center justify-center bg-blue-100 rounded-lg">
-                    <Icon className="w-6 h-6 text-gray-600" />
-                  </div>
-                  {service.badge && (
-                    <span className="absolute -top-2 -right-2 px-2 py-0.5 text-xs text-white bg-red-500 rounded-full">
-                      {service.badge}
-                    </span>
-                  )}
+            <Link to={url} key={index} className="flex flex-col items-center gap-2">
+              <div className="relative">
+                <div className="w-12 h-12 flex items-center justify-center bg-blue-100 rounded-lg">
+                  <Icon className="w-6 h-6 text-gray-600" />
                 </div>
-                <span className="text-sm text-center">{service.label}</span>
+                {service.badge && (
+                  <span className="absolute -top-2 -right-2 px-2 py-0.5 text-xs text-white bg-red-500 rounded-full">
+                    {service.badge}
+                  </span>
+                )}
               </div>
+              <span className="text-sm text-center">{service.label}</span>
             </Link>
           )
         })}
@@ -77,7 +75,7 @@ export default function PanelHome() {
 }
 
 
-export function HeaderBack({ title, back_to="/panel" }: { title: string; back_to?: string }) {
+export function HeaderBack({ title, back_to = "/panel" }: { title: string; back_to?: string }) {
   return <div className="flex items-center gap-4 px-4 py-2 rounded-lg border ">
     <Link to={back_to} ><ChevronLeft /></Link>
     <div className="text-xl">{title}</div>

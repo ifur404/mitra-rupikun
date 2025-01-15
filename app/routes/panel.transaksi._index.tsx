@@ -47,7 +47,8 @@ export default function paneltransaksi() {
       <HeaderBack title="Transaksi" />
       <div className="flex flex-col gap-4">
         {loaderData.map((e, i) => {
-          if (e.type === LedgerTypeEnum.BALANCE_USER) {
+          if(!e.uuid) return null
+          if ([LedgerTypeEnum.TOPUP, LedgerTypeEnum.BALANCE_USER].includes(e.type)) {
             return <Link to={`/panel/transaksi/${e.uuid}`} key={e.uuid} className="p-4 rounded-lg border">
               <div>Top Up </div>
               <b>{formatCurrency(e.mutation?.toString() || '')}</b>

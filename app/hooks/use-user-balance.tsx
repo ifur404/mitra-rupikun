@@ -8,7 +8,7 @@ export default function useUserBalance(user_id:number) {
 
     useEffect(() => {
         if (fetcher.data !== undefined) return
-        fetcher.load(`/api/ledger?type=${LedgerTypeEnum.BALANCE_USER}&key=${user_id}`)
+        fetcher.load(`/api/ledger&key=${user_id}`)
     }, [user_id])
 
     return {

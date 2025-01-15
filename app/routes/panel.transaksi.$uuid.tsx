@@ -10,6 +10,8 @@ import { formatValue, pickKeys } from "./panel.pulsa";
 import { Textarea } from "~/components/ui/textarea";
 import { Label } from "~/components/ui/label";
 import { Button } from "~/components/ui/button";
+import { LedgerTypeEnum } from "~/data/enum";
+import { formatCurrency } from "~/components/InputCurrency";
 
 export async function loader(req: LoaderFunctionArgs) {
     const user = await allowAny(req)
@@ -32,13 +34,25 @@ export async function loader(req: LoaderFunctionArgs) {
 
 export default function PanelLegdger() {
     const loaderData = useLoaderData<typeof loader>()
-    const status:any = "done" in loaderData.transaction.data ? loaderData.transaction.data.done : loaderData.transaction.data.response
-    const data = pickKeys(status, ['customer_no','buyer_sku_code','message','sn','price'])
+    let status:any =  {}
+    if([LedgerTypeEnum.BALANCE_USER, LedgerTypeEnum.TOPUP].includes(loaderData.transaction.type)){
+        status = {
+            id: loaderData.transaction.uuid,
+            jumlah: `+${formatCurrency(loaderData.transaction.mutation?.toString() || "0")}`,
+            created_at: new Date(loaderData.transaction.created_at || 0)?.toLocaleString("id-ID"),
+            ...loaderData.transaction.data,
+        }
+    }
+    if (loaderData.transaction.type === LedgerTypeEnum.PURCHASE){
+        status = "done" in loaderData.transaction.data ? loaderData.transaction.data.done : loaderData.transaction.data.response
+        status = pickKeys(status, ['customer_no','buyer_sku_code','message','sn','price'])
+    }
+    
     return (
         <div className="space-y-4">
             <HeaderBack title={`Transaksi ${loaderData.uuid}`} back_to="/panel/transaksi" />
             <div className="p-4 rounded-lg border">
-                {Object.entries(data).map(([key, value]) => (
+                {Object.entries(status).map(([key, value]) => (
                     <div key={key} className="flex justify-between border-b border-gray-200 py-2">
                         <span className="text-gray-600">{key.split("_").join(" ")}</span>
                         <span className="text-gray-900 font-medium">
