@@ -1,6 +1,5 @@
 import { useFetcher } from "@remix-run/react";
 import { useEffect } from "react";
-import { LedgerTypeEnum } from "~/data/enum";
 import { ledgerTable } from "~/drizzle/schema";
 
 export default function useUserBalance(user_id:number) {
@@ -8,7 +7,7 @@ export default function useUserBalance(user_id:number) {
 
     useEffect(() => {
         if (fetcher.data !== undefined) return
-        fetcher.load(`/api/ledger&key=${user_id}`)
+        fetcher.load(`/api/ledger?key=${user_id}`)
     }, [user_id])
 
     return {
