@@ -41,7 +41,7 @@ export default function dashboarddigiflazzcache() {
     }
 
     useEffect(()=> {
-        if(fetcher.data?.success && fetcher.state==="idle"){
+        if(fetcher.data?.success){
             toast.success("Success", {position: 'top-center'})
         }
     },[fetcher.data])
