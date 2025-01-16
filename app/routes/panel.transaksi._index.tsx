@@ -15,7 +15,7 @@ import { formatCurrency } from "~/components/InputCurrency";
 export type TDataLedger = {
   form?: TFormPulsa,
   response?: TResponseTransaction
-} & TFormTopUp
+} & TFormTopUp & TResponseTransaction
 
 export async function loader(req: LoaderFunctionArgs) {
   const user = await allowAny(req)

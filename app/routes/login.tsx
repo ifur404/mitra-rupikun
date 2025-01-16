@@ -1,4 +1,4 @@
-import { json, LoaderFunctionArgs, MetaFunction, redirect } from "@remix-run/cloudflare";
+import { LoaderFunctionArgs, MetaFunction, redirect } from "@remix-run/cloudflare";
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { GithubIcon, TwitterIcon } from "lucide-react"

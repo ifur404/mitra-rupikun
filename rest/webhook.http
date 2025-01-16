@@ -21,7 +21,7 @@ X-Digiflazz-Event: create
 {
     "data": {
         "trx_id": "5ca22497cc6d0f965d9f84ac",
-        "ref_id": "30467470",
+        "ref_id": "61e41e4b-9034-4fe6-9f6c-1d44709aa741",
         "customer_no": "081280556115",
         "buyer_sku_code": "ovo100",
         "message": "Sukses",
@@ -29,7 +29,7 @@ X-Digiflazz-Event: create
         "rc": "00",
         "buyer_last_saldo": 326719460,
         "sn": "SEPTIAPAR/20190401214753214742",
-        "price": 199800,
+        "price": 2000,
         "tele": "@telegram",
         "wa": "081234512345"
     }

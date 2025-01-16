@@ -1,7 +1,6 @@
 import { LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { BottonNav, HeaderBack } from "./panel._index";
 import { allowAny } from "~/lib/auth.server";
-import { useLoaderData } from "@remix-run/react";
 import { db } from "~/drizzle/client.server";
 import { eq } from "drizzle-orm";
 import { ledgerTable } from "~/drizzle/schema";
@@ -12,6 +11,10 @@ import { Label } from "~/components/ui/label";
 import { Button } from "~/components/ui/button";
 import { LedgerTypeEnum } from "~/data/enum";
 import { formatCurrency } from "~/components/InputCurrency";
+import { Check, CircleX, Loader2 } from "lucide-react";
+import { TResponseTransaction } from "~/lib/digiflazz";
+import { useLiveLoader } from "~/hooks/use-live-loader";
+import { useEffect } from "react";
 
 export async function loader(req: LoaderFunctionArgs) {
     const user = await allowAny(req)
@@ -33,7 +36,11 @@ export async function loader(req: LoaderFunctionArgs) {
 }
 
 export default function PanelLegdger() {
-    const loaderData = useLoaderData<typeof loader>()
+    const loaderData = useLiveLoader<typeof loader>();
+    useEffect(()=> {
+        console.log(loaderData)
+    },[loaderData])
+    
     let status:any =  {}
     if([LedgerTypeEnum.BALANCE_USER, LedgerTypeEnum.TOPUP].includes(loaderData.transaction.type)){
         status = {
@@ -45,14 +52,31 @@ export default function PanelLegdger() {
     }
     if (loaderData.transaction.type === LedgerTypeEnum.PURCHASE){
         status = "done" in loaderData.transaction.data ? loaderData.transaction.data.done : loaderData.transaction.data.response
-        status = pickKeys(status, ['customer_no','buyer_sku_code','message','sn','price'])
     }
     
     return (
         <div className="space-y-4">
             <HeaderBack title={`Transaksi ${loaderData.uuid}`} back_to="/panel/transaksi" />
+
+            <div className="flex items-end justify-center h-20 mt-2">
+                <div className="flex justify-center gap-2 items-center flex-col">
+                    {!("done" in loaderData.transaction.data) ? (
+                        <>
+                            <Loader2 className="animate-spin" size={50}/>
+                            <p>harap tunggu.....</p>
+                        </>
+                    ) : (
+                        <>
+                            {(status as TResponseTransaction).status === "Sukses" ? 
+                            <Check size={50} className="animate-bounce "/>
+                            : <CircleX size={50} className="animate-bounce " />}
+                        </>
+                    )}
+                </div>
+            </div>
+
             <div className="p-4 rounded-lg border">
-                {Object.entries(status).map(([key, value]) => (
+                {Object.entries(pickKeys(status, ['customer_no','buyer_sku_code','message','sn','price'])).map(([key, value]) => (
                     <div key={key} className="flex justify-between border-b border-gray-200 py-2">
                         <span className="text-gray-600">{key.split("_").join(" ")}</span>
                         <span className="text-gray-900 font-medium">

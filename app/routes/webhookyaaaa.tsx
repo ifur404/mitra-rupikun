@@ -5,6 +5,7 @@ import { TWebhookData } from "~/lib/digiflazz";
 import crypto from 'node:crypto';
 import { eq } from "drizzle-orm";
 import { CACHE_KEYS } from "~/data/cache";
+import { emitter } from "~/lib/emitter.server";
 
 function CheckSignature(body: string, sign: string, secret: string) {
     const signature = crypto
@@ -69,6 +70,9 @@ export async function action(req: ActionFunctionArgs) {
         await req.context.cloudflare.env.KV.put(CACHE_KEYS.SALDO_GLOBAL, data.buyer_last_saldo.toString(), {
             expirationTtl: 60
         })
+
+        emitter.emit("/");
+        emitter.emit(`/panel/transaksi/${data.ref_id}`);
     }
 
     return Response.json({ status: "success", message: "Webhook received" });

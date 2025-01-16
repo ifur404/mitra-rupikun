@@ -16,7 +16,7 @@ import { TAuth } from "~/lib/auth.server"
 import { truncateString } from "~/lib/string"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Button } from "./ui/button"
-import { Link } from "@remix-run/react"
+import { Link, useLocation, useNavigation } from "@remix-run/react"
 
 // This is sample data.
 const data = {
@@ -68,6 +68,8 @@ const data = {
 }
 
 export function ShowAccount({user}:{user:TAuth,}){
+  const url = useLocation()
+
   return <div className="flex gap-2 px-4 py-2 mt-4">
   <Avatar>
       <AvatarImage src={user.picture || ''} />
@@ -76,7 +78,15 @@ export function ShowAccount({user}:{user:TAuth,}){
   <div>
       <div>{user.name}</div>
       <p className="text-xs truncate">{user.email}</p>
-      <Link to="/logout"> <Button size="sm" variant="outline" className="py-1 px-4 mt-2 text-xs">Logout</Button></Link>
+      <div className="flex gap-2">
+        <Link to="/logout"> <Button size="sm" variant="outline" className="py-1 px-4 mt-2 text-xs">Logout</Button></Link>
+        {user.is_staff && url.pathname.startsWith("/panel") && (
+          <Link to="/dashboard"> <Button size="sm" variant="outline" className="py-1 px-4 mt-2 text-xs">Admin</Button></Link>
+        )}
+        {user.is_staff && url.pathname.startsWith("/dashboard") && (
+          <Link to="/panel"> <Button size="sm" variant="outline" className="py-1 px-4 mt-2 text-xs">Panel</Button></Link>
+        )}
+      </div>
   </div>
 </div>
 }

@@ -1,15 +1,12 @@
 import { LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { and, desc, eq, inArray, like, or, sql } from "drizzle-orm";
+import { and, desc, like, or, sql } from "drizzle-orm";
 import { db } from "~/drizzle/client.server";
 import { productTable } from "~/drizzle/schema";
-import { allowAny, onlyStaff } from "~/lib/auth.server";
 import { sqlPagination } from "~/lib/query.server";
 
 export async function loader(req: LoaderFunctionArgs) {
-    const user = await onlyStaff(req)
     const mydb = db(req.context.cloudflare.env.DB)
     const url = new URL(req.request.url)
-    const searchParams = url.searchParams
 
     const filter = sqlPagination(url)
     const searchableFields = [productTable.name, ]
