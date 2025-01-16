@@ -4,11 +4,13 @@ export class Digiflazz {
     url: string;
     username: string;
     apikey: string;
+    isProd: boolean;
 
     constructor(username: string, apikey: string) {
         this.url = 'https://digi.rupikun.com/v1/'
         this.username = username
         this.apikey = apikey
+        this.isProd = process.env.NODE_ENV === 'production'
     }
 
     generateMD5(input: string) {
@@ -16,7 +18,7 @@ export class Digiflazz {
     }
 
     getSign(cmd: string) {
-        return this.generateMD5(this.username + this.apikey + cmd)
+        return this.generateMD5(`${this.username}${this.apikey}${cmd}`)
     }
 
     async getSaldo(): Promise<number> {
@@ -32,6 +34,9 @@ export class Digiflazz {
             }
         })
         const data = await req.json() as { data: { deposit: number } }
+        if(!this.isProd){
+            console.log(data)
+        }
         return data.data.deposit
     }
 
@@ -49,6 +54,9 @@ export class Digiflazz {
             }
         })
         const data = await req.json() as { data: TPriceList[] }
+        // if(!this.isProd){
+        //     console.log(data)
+        // }
         return data.data
     }
 
@@ -84,7 +92,7 @@ export class Digiflazz {
             cb_url: webhook_url
         }
 
-        if (process.env.NODE_ENV === 'development') {
+        if (!this.isProd) {
             payload = { ...payload, testing: true, customer_no: "087800001233", buyer_sku_code: "xld10" }
         }
 

@@ -39,7 +39,7 @@ function identifyOperator(phoneNumber: string) {
     return null;
 }
 
-async function getPricelist(env: Env) {
+export async function getPricelist(env: Env) {
     const { DIGI_USERNAME, DIGI_APIKEY } = env
     const cache = env.KV
     const cache_data = await cache.get(CACHE_KEYS.PULSA)
@@ -61,7 +61,7 @@ async function getPricelist(env: Env) {
 
 
 export async function loader(req: LoaderFunctionArgs) {
-    const user = await allowAny(req)
+    const _ = await allowAny(req)
     const product = await getPricelist(req.context.cloudflare.env)
     return {
         data: product

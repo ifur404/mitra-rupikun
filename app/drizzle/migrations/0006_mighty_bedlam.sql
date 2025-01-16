@@ -1,1 +1,0 @@
-ALTER TABLE `transaction` ADD `profit` integer DEFAULT 0;

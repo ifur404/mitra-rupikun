@@ -2,7 +2,7 @@ import { LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import { Wallet } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
-import { allowAny, onlyStaff } from "~/lib/auth.server";
+import { onlyStaff } from "~/lib/auth.server";
 import { Digiflazz } from "~/lib/digiflazz";
 
 export async function loader(req: LoaderFunctionArgs) {
@@ -11,7 +11,7 @@ export async function loader(req: LoaderFunctionArgs) {
   const keyKV = "saldo"
   let saldo = 0
   // await req.context.cloudflare.env.KV.delete(keyKV)
-  // console.log(process.env)
+  // console.log(req.context.cloudflare.env)
   const cache = await req.context.cloudflare.env.KV.get(keyKV)
   if(cache){
     saldo = Number(cache) || 0

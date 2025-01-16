@@ -28,8 +28,8 @@ pages_build_output_dir = "./build/client"
 # Docs: https://developers.cloudflare.com/pages/functions/bindings/#d1-databases
 [[d1_databases]]
 binding = "DB"
-database_name = "pbo"
-database_id = "78d83cdf-eb9d-49a6-afc5-4f60eac31fb9"
+database_name = "mitra"
+database_id = "9eded703-490c-4c33-b680-893f77ede2d1"
 migrations_dir = "./app/drizzle/migrations"
 
 
@@ -45,7 +45,7 @@ migrations_dir = "./app/drizzle/migrations"
 # Docs: https://developers.cloudflare.com/pages/functions/bindings/#kv-namespaces
 [[kv_namespaces]]
 binding = "KV"
-id = "9a4c94d406e84badabd0afbca1172eb4"
+id = "4cc6fb2bda834f6b8f282d6155a8602d"
 
 # Bind a Queue producer. Use this binding to schedule an arbitrary task that may be processed later by a Queue consumer.
 # Docs: https://developers.cloudflare.com/pages/functions/bindings/#queue-producers

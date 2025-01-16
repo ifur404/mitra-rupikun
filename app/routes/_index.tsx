@@ -5,8 +5,9 @@ import { DataTable } from "~/components/datatable";
 import { formatCurrency } from "~/components/InputCurrency";
 import { Button } from "~/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { db } from "~/drizzle/client.server";
 import { productTable } from "~/drizzle/schema";
+import { getPricelist } from "./panel.pulsa";
+import { TPriceList } from "~/lib/digiflazz";
 
 export const meta: MetaFunction = () => {
   return [
@@ -16,32 +17,32 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader(req: LoaderFunctionArgs) {
-  const product = await db(req.context.cloudflare.env.DB).select({
-    id: productTable.id,
-    name: productTable.name,
-    price_sell: productTable.price_sell,
-    updated_at: productTable.updated_at
-  }).from(productTable)
+  const product = await getPricelist(req.context.cloudflare.env)
+  // const product = await db(req.context.cloudflare.env.DB).select({
+  //   id: productTable.id,
+  //   name: productTable.name,
+  //   price_sell: productTable.price_sell,
+  //   updated_at: productTable.updated_at
+  // }).from(productTable)
 
   return product
 }
 
 
-type TData = typeof productTable.$inferSelect
-const collums: ColumnDef<TData>[] = [
+const collums: ColumnDef<TPriceList>[] = [
   {
     id: "id",
-    accessorKey: 'id',
+    accessorKey: 'buyer_sku_code',
     header: "ID"
   },
   {
     id: "name",
-    accessorKey: 'name',
+    accessorKey: 'product_name',
     header: "Product"
   },
   {
     id: "price_sell",
-    accessorFn: (d) => formatCurrency(d?.price_sell?.toString() || "0"),
+    accessorFn: (d) => formatCurrency(d?.price?.toString() || "0"),
     header: "Harga"
   },
 ]

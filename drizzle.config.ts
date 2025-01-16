@@ -9,7 +9,7 @@ const getLocalD1 = () => {
     const basePath = path.resolve('.wrangler');
     const files = fs
       .readdirSync(basePath, { encoding: 'utf-8', recursive: true })
-      .filter((f) => f.endsWith('.sqlite'));
+      .filter((f) => f.includes("d1") && f.endsWith('.sqlite'));
 
     if (files.length === 0) {
       throw new Error(`No .sqlite files found in ${basePath}`);

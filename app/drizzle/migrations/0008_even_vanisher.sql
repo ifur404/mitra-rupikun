@@ -1,1 +1,0 @@
-ALTER TABLE `ledger` ADD `uuid` text;

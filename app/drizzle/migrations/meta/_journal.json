@@ -5,64 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1736493758353,
-      "tag": "0000_bent_darwin",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1736496357064,
-      "tag": "0001_wild_nomad",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1736498326834,
-      "tag": "0002_sharp_lord_hawal",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1736501234876,
-      "tag": "0003_dapper_ben_urich",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1736592593046,
-      "tag": "0004_confused_adam_destine",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1736605918696,
-      "tag": "0005_needy_lyja",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "6",
-      "when": 1736678548250,
-      "tag": "0006_mighty_bedlam",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "6",
-      "when": 1736696731194,
-      "tag": "0007_legal_starbolt",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "6",
-      "when": 1736874044206,
-      "tag": "0008_even_vanisher",
+      "when": 1737029005597,
+      "tag": "0000_early_kree",
       "breakpoints": true
     }
   ]

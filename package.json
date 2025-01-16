@@ -14,7 +14,8 @@
     "preview": "npm run build && wrangler pages dev",
     "cf-typegen": "wrangler types",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "wrangler d1 migrations apply pbo --local",
+    "db:migrate": "wrangler d1 migrations apply mitra --local",
+    "db:migrate:prod": "wrangler d1 migrations apply mitra --remote",
     "studio:dev": "cross-env NODE_ENV=development drizzle-kit studio",
     "studio:prd": "cross-env NODE_ENV=production drizzle-kit studio"
   },
