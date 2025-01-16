@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/cloudflare";
-import { ClientLoaderFunctionArgs, Link, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "~/components/datatable";
 import { formatCurrency } from "~/components/InputCurrency";
@@ -11,7 +11,7 @@ import { productTable } from "~/drizzle/schema";
 export const meta: MetaFunction = () => {
   return [
     { title: "Jualan Pulsa" },
-    { name: "description", content: "Jual pulsa murah dan gampang hanya di pbo.rupikun.com" },
+    { name: "description", content: "Jual pulsa murah dan gampang hanya di mitra.rupikun.com" },
   ];
 };
 

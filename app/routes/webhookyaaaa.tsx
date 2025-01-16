@@ -1,30 +1,28 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { db } from "~/drizzle/client.server";
-import { transactionTable, webhookTable } from "~/drizzle/schema";
-import { CHOICE_STATUS, TWebhookData } from "~/lib/digiflazz";
+import { ledgerTable, webhookTable } from "~/drizzle/schema";
+import { TWebhookData } from "~/lib/digiflazz";
 import crypto from 'node:crypto';
 import { eq } from "drizzle-orm";
+import { CACHE_KEYS } from "~/data/cache";
 
-function isValidate(body: string, sign: string, secret: string) {
-    console.log(body, sign, secret)
+function CheckSignature(body: string, sign: string, secret: string) {
     const signature = crypto
         .createHmac("sha1", secret)
         .update(body)
         .digest("hex");
 
-    if (sign === `sha1=${signature}`) {
-        return true
+    if (sign === signature) {
+        return [true, signature]
     }
-    return false
+    return [false, signature]
 }
 
 export async function action(req: ActionFunctionArgs) {
-    // const rawBody = await req.request.json();
-    // const receivedSignature = req.request.headers.get("X-Hub-Signature") as string;
-    // const isValid = isValidate(rawBody, req.context.cloudflare.env.SECRET_DIGIFLAZZ, receivedSignature)
-    // if (isValid) {
-    // const {data} = JSON.parse(rawBody) as {data: TWebhookData};
-    const {data} = await req.request.json() as {data: TWebhookData};
+    const rawBody = await req.request.text();
+    const receivedSignature = req.request.headers.get("X-Hub-Signature") as string;
+    const [isValid, signature] = CheckSignature(rawBody, req.context.cloudflare.env.SECRET_DIGIFLAZZ, receivedSignature)
+    const { data } = JSON.parse(rawBody) as { data: TWebhookData };
 
     const timestamp = new Date().toISOString();
     const headers = Object.fromEntries(req.request.headers.entries());
@@ -42,23 +40,38 @@ export async function action(req: ActionFunctionArgs) {
         data: JSON.stringify(webhookPayload),
     });
 
-    if(data.ref_id){
-        await mydb.update(transactionTable).set({
-            status: CHOICE_STATUS.find(e=>e.label===data.status)?.value || 4,
-            updated_at: new Date().getTime(),
-        }).where(eq(transactionTable.key, data.ref_id))
+    if (data.ref_id) {
+        const ledger = await mydb.query.ledgerTable.findFirst({
+            where: eq(ledgerTable.uuid, data.ref_id)
+        })
 
-        await req.context.cloudflare.env.KV.put("saldo", data.buyer_last_saldo.toString(), {
+        let last_data = {}
+        try {
+            last_data = JSON.parse(ledger?.data || "{}") as any
+        } catch (error) {
+            
+        }
+
+        await mydb.update(ledgerTable).set({
+            data: JSON.stringify({
+                ...last_data,
+                done: webhookPayload.formdata,
+                webhook_detail: {
+                    headers: webhookPayload.headers,
+                    timestamp: webhookPayload.timestamp,
+                    clientIp: webhookPayload.clientIp,
+                    signature,
+                    isValid
+                }
+            })
+        }).where(eq(ledgerTable.uuid, data.ref_id))
+
+        await req.context.cloudflare.env.KV.put(CACHE_KEYS.SALDO_GLOBAL, data.buyer_last_saldo.toString(), {
             expirationTtl: 60
         })
     }
 
     return Response.json({ status: "success", message: "Webhook received" });
-    // }
-
-    // return Response.json(
-    //     { status: "error", message: "Invalid signature" },
-    // );
 }
 
 export async function loader(req: LoaderFunctionArgs) {

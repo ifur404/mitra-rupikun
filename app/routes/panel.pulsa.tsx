@@ -51,9 +51,10 @@ async function getPricelist(env: Env) {
     const product = await digiflazz.priceList({
         category: "Pulsa",
     })
+    const p_sort = product.sort((a,b)=> a.price - b.price)
     if (product.length > 0) {
-        await cache.put(CACHE_KEYS.PULSA, JSON.stringify(product))
-        return product
+        await cache.put(CACHE_KEYS.PULSA, JSON.stringify(p_sort))
+        return p_sort
     }
     return []
 }
@@ -120,7 +121,7 @@ export type TFormPulsa = {
 export default function PanelPulsa() {
     const loaderData = useLoaderData<typeof loader>()
     const [form, setForm] = useState<TFormPulsa>({
-        phone_number: "082122012959",
+        phone_number: "",
         operator: null,
         paket: null
     })

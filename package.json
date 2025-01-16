@@ -1,5 +1,5 @@
 {
-  "name": "pbo-rupikun",
+  "name": "mitra-rupikun",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -19,6 +19,7 @@
     "studio:prd": "cross-env NODE_ENV=production drizzle-kit studio"
   },
   "dependencies": {
+    "@epic-web/remember": "^1.1.0",
     "@radix-ui/react-avatar": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.4",
     "@radix-ui/react-label": "^2.1.1",
@@ -46,6 +47,7 @@
     "next-themes": "^0.4.4",
     "react": "^18.3.1",
     "react-dom": "^18.2.0",
+    "remix-utils": "^7.0.0-pre.7",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
