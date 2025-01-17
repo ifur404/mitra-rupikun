@@ -12,7 +12,6 @@ export const userTable = sqliteTable('user', {
     phone_number: text(),
     created_at: integer().$default(() => new Date().getTime()),
     updated_at: integer().$default(() => new Date().getTime()),
-
 });
 
 

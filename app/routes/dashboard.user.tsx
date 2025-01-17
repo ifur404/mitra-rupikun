@@ -12,7 +12,6 @@ import { PaginationPage } from "~/components/pagination-page"
 import SheetAction from "~/components/SheetAction"
 import { Button } from "~/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog"
-import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Textarea } from "~/components/ui/textarea"
 import { LedgerTypeEnum } from "~/data/enum"
@@ -74,7 +73,7 @@ export async function action(req: ActionFunctionArgs) {
     const user_id = Number(formData.get("user_id"))
     const append_balance = convertCurrencyToDecimal(formData.get("amount")?.toString() || '0')
     const before = await mydb.query.ledgerTable.findFirst({
-      where: and(eq(ledgerTable.key, user_id), eq(ledgerTable.type, LedgerTypeEnum.BALANCE_USER)),
+      where: and(eq(ledgerTable.key, user_id), eq(ledgerTable.type, LedgerTypeEnum.TOPUP)),
       orderBy: desc(ledgerTable.created_at)
     })
     const before_balance = before?.id ? Number(before.before) : 0
@@ -85,11 +84,13 @@ export async function action(req: ActionFunctionArgs) {
 
     await mydb.insert(ledgerTable).values({
       key: user_id,
-      type: LedgerTypeEnum.BALANCE_USER,
+      type: LedgerTypeEnum.TOPUP,
       before: before_balance,
       mutation: append_balance,
       after: before_balance + append_balance,
-      data: JSON.stringify(topup),
+      data: JSON.stringify({
+        topup: topup
+      }),
       created_at: new Date().getTime(),
       created_by: user.id
     })

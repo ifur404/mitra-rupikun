@@ -1,7 +1,9 @@
 export const LedgerTypeEnum = {
-    BALANCE_USER: 'balance_user', // Adjust balance manually
-    TOPUP: 'topup',              // Top-up transactions
-    PURCHASE: 'purchase',        // Deduct balance for purchases
-    REFUND: 'refund',            // Refund transactions
-    WITHDRAW: 'withdraw',        // User withdrawal
+    BALANCE_USER: 'balance_user', 
+    TOPUP: 'topup',
+    PURCHASE: 'purchase',
+    PURCHASE_PULSA: 'purchase_pulsa',
+    PROFIT: 'profit',
+    REFUND: 'refund',
+    WITHDRAW: 'withdraw',
 };

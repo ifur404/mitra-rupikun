@@ -6,23 +6,58 @@ import crypto from 'node:crypto';
 import { eq } from "drizzle-orm";
 import { CACHE_KEYS } from "~/data/cache";
 import { emitter } from "~/lib/emitter.server";
+import { sendIpurNotification } from "~/lib/telegram";
 
-function CheckSignature(body: string, sign: string, secret: string) {
-    const signature = crypto
-        .createHmac("sha1", secret)
-        .update(body)
-        .digest("hex");
+// function CheckSignature(body: string, sign: string, secret: string) {
+//     const signature = crypto
+//         .createHmac("sha1", secret)
+//         .update(body)
+//         .digest("hex");
 
-    if (sign === signature) {
-        return [true, signature]
+//     if (sign === signature) {
+//         return [true, signature]
+//     }
+//     return [false, signature]
+// }
+
+export async function CheckSignature(
+    body: string,
+    sign: string,
+    secret: string
+  ): Promise<[boolean, string]> {
+    // Encode the request body and secret as Uint8Array
+    const encoder = new TextEncoder();
+    const data = encoder.encode(body);
+    const keyData = encoder.encode(secret);
+  
+    // Import the secret as an HMAC key with SHA-1
+    const key = await crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "HMAC", hash: { name: "SHA-1" } },
+      false,
+      ["sign"]
+    );
+  
+    // Sign the body
+    const signatureBuffer = await crypto.subtle.sign("HMAC", key, data);
+  
+    // Convert the resulting ArrayBuffer to a hex string
+    const byteArray = new Uint8Array(signatureBuffer);
+    let computedHex = "";
+    for (let i = 0; i < byteArray.length; i++) {
+      computedHex += byteArray[i].toString(16).padStart(2, "0");
     }
-    return [false, signature]
-}
+  
+    const expectedSignature = `sha1=${computedHex}`;
+   
+    return [(sign === expectedSignature), expectedSignature]
+  }
 
 export async function action(req: ActionFunctionArgs) {
     const rawBody = await req.request.text();
     const receivedSignature = req.request.headers.get("X-Hub-Signature") as string;
-    const [isValid, signature] = CheckSignature(rawBody, req.context.cloudflare.env.SECRET_DIGIFLAZZ, receivedSignature)
+    const [isValid, signature] = await CheckSignature(rawBody, req.context.cloudflare.env.SECRET_DIGIFLAZZ, receivedSignature)
     const { data } = JSON.parse(rawBody) as { data: TWebhookData };
 
     const timestamp = new Date().toISOString();
@@ -71,6 +106,8 @@ export async function action(req: ActionFunctionArgs) {
             expirationTtl: 60
         })
 
+        await sendIpurNotification(`Webhook \n${JSON.stringify(webhookPayload.formdata)}`)
+
         emitter.emit("/");
         emitter.emit(`/panel/transaksi/${data.ref_id}`);
     }
@@ -78,6 +115,3 @@ export async function action(req: ActionFunctionArgs) {
     return Response.json({ status: "success", message: "Webhook received" });
 }
 
-export async function loader(req: LoaderFunctionArgs) {
-    return Response.json({ "status": "ok" })
-}

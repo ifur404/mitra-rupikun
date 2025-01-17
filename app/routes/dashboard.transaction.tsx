@@ -179,21 +179,18 @@ export default function Transaction() {
 
 function AddData() {
     const formatPhoneNumber = (value: string): string => {
-        // Hapus semua karakter yang bukan angka
         const cleaned = value.replace(/\D/g, "");
 
-        // Pastikan input dimulai dengan 0
         if (!cleaned.startsWith("0")) {
-            return "0" + cleaned.slice(0, 12); // Tambahkan 0 jika tidak ada
+            return "0" + cleaned.slice(0, 12); 
         }
 
-        // Batasi hingga 12 angka (nomor telepon lokal Indonesia)
         return cleaned.slice(0, 12);
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const formattedValue = formatPhoneNumber(e.target.value);
-        e.target.value = formattedValue; // Langsung set nilai input di DOM
+        e.target.value = formattedValue; 
     };
 
     return <SheetAction title="Add Data" triger={<Button><Plus /> Add Data</Button>}>

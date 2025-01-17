@@ -99,7 +99,7 @@ export async function action(req: ActionFunctionArgs) {
                 mutation: paket.price,
                 after: saldo.after - paket.price,
                 key: user.id,
-                type: LedgerTypeEnum.PURCHASE,
+                type: LedgerTypeEnum.PURCHASE_PULSA,
                 created_by: user.id,
                 created_at: new Date().getTime(),
                 data: JSON.stringify({
