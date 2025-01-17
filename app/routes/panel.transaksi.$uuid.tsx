@@ -49,12 +49,12 @@ export async function action(req: ActionFunctionArgs) {
     });
 
     const formData = await req.request.formData()
-    const complain_text = JSON.stringify({...JSON.parse(transaction?.data || "{}"), complain: formData.get('complain') || ''})
+    const complain_text = JSON.stringify({...JSON.parse(transaction?.data || "{}"), complain: formData.get('complain') || ''}, null, "\t")
     await mydb.update(ledgerTable).set({
         data: complain_text
     }).where(eq(ledgerTable.id, transaction.id))
 
-    await sendIpurNotification(`Complain \n${complain_text}`)
+    await sendIpurNotification(`Complain \n${complain_text}`, req.context.cloudflare.env.TELEGRAM_TOKEN)
     return {
         success: true
     }

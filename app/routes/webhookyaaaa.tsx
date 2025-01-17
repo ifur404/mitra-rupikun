@@ -106,7 +106,7 @@ export async function action(req: ActionFunctionArgs) {
             expirationTtl: 60
         })
 
-        await sendIpurNotification(`Webhook \n${JSON.stringify(webhookPayload.formdata)}`)
+        await sendIpurNotification(`Webhook \n${JSON.stringify(webhookPayload.formdata, null, "\t")}`, req.context.cloudflare.env.TELEGRAM_TOKEN)
 
         emitter.emit("/");
         emitter.emit(`/panel/transaksi/${data.ref_id}`);

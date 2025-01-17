@@ -13,5 +13,6 @@ interface Env {
 	DIGI_USERNAME: string;
 	DIGI_APIKEY: string;
 	NODE_ENV: string;
+	TELEGRAM_TOKEN: string;
 	DB: D1Database;
 }
