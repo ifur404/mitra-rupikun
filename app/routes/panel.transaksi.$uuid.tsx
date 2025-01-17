@@ -73,8 +73,8 @@ export default function PanelLegdger() {
         <div className="space-y-4">
             <HeaderBack title={`Transaksi ${loaderData.uuid}`} back_to="/panel/transaksi" />
 
-            {loaderData.transaction.type === LedgerTypeEnum.TOPUP && <RenderTopUp data={loaderData.transaction.data} />}
-            {loaderData.transaction.type === LedgerTypeEnum.PURCHASE_PULSA || loaderData.transaction.type === LedgerTypeEnum.PURCHASE && <RenderPulsa data={loaderData.transaction.data} />}
+            {(loaderData.transaction.type === LedgerTypeEnum.TOPUP) && <RenderTopUp data={loaderData.transaction.data} />}
+            {(loaderData.transaction.type === LedgerTypeEnum.PURCHASE_PULSA || loaderData.transaction.type === LedgerTypeEnum.PURCHASE) && <RenderPulsa data={loaderData.transaction.data} />}
 
             <fetcher.Form method="POST" className="p-4 rounded-lg border space-y-2">
                 <Label htmlFor="Komplen">Ajukan Keluhan :</Label>
@@ -115,7 +115,7 @@ function RenderPulsa({ data }: { data: TDataLedger }) {
         </div>
     }
 
-    if (data.response?.status === "Pending" && !("done" in data)) {
+    if (data.response?.status === "Pending" && !data.done) {
         return <>
             <div className="flex items-end justify-center h-20 mt-2">
                 <div className="flex justify-center gap-2 items-center flex-col">

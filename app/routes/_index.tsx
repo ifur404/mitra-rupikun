@@ -1,13 +1,13 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/cloudflare";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, redirect, useLoaderData } from "@remix-run/react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "~/components/datatable";
 import { formatCurrency } from "~/components/InputCurrency";
 import { Button } from "~/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { productTable } from "~/drizzle/schema";
 import { getPricelist } from "./panel.pulsa";
 import { TPriceList } from "~/lib/digiflazz";
+import sessionCookie, { TAuth } from "~/lib/auth.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -17,14 +17,11 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader(req: LoaderFunctionArgs) {
+  const session = sessionCookie(req.context.cloudflare.env)
+  const user: TAuth | undefined = await session.parse(req.request.headers.get("Cookie"))
+  if(user && user?.is_staff) throw redirect('/dashboard')
+  if(user && user?.id) throw redirect('/panel')
   const product = await getPricelist(req.context.cloudflare.env)
-  // const product = await db(req.context.cloudflare.env.DB).select({
-  //   id: productTable.id,
-  //   name: productTable.name,
-  //   price_sell: productTable.price_sell,
-  //   updated_at: productTable.updated_at
-  // }).from(productTable)
-
   return product
 }
 
@@ -88,7 +85,7 @@ function Price() {
     <section id="price" className="py-20 bg-gray-50">
       <div className="container mx-auto">
         <h2 className="text-3xl font-bold text-center mb-12">Harga</h2>
-        <DataTable columns={collums} data={loadData || []}/>
+        <DataTable columns={collums} data={loadData || []} />
       </div>
     </section>
   )
