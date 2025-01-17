@@ -12,5 +12,6 @@ interface Env {
 	WEBHOOK_URL: string;
 	DIGI_USERNAME: string;
 	DIGI_APIKEY: string;
+	NODE_ENV: string;
 	DB: D1Database;
 }

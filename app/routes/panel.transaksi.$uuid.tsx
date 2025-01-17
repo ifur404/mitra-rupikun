@@ -37,9 +37,6 @@ export async function loader(req: LoaderFunctionArgs) {
 
 export default function PanelLegdger() {
     const loaderData = useLiveLoader<typeof loader>();
-    useEffect(()=> {
-        console.log(loaderData)
-    },[loaderData])
     
     let status:any =  {}
     if([LedgerTypeEnum.BALANCE_USER, LedgerTypeEnum.TOPUP].includes(loaderData.transaction.type)){

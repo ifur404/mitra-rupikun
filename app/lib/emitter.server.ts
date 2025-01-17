@@ -1,4 +1,14 @@
 import { EventEmitter } from "node:events";
-import { remember } from "@epic-web/remember";
 
-export const emitter = remember("emitter", () => new EventEmitter());
+export const emitter = new EventEmitter({ captureRejections: true });
+
+export const EVENTS = {
+    TRANSACTION_CHANGE: (uuid: string) => {
+        emitter.emit("/");
+        emitter.emit(`transaction_${uuid}`);
+    },
+    TRANSACTION_PING: (uuid: string) => {
+        emitter.emit("/");
+        emitter.emit(`/tes2`);
+    },
+};

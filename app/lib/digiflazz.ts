@@ -4,13 +4,11 @@ export class Digiflazz {
     url: string;
     username: string;
     apikey: string;
-    isProd: boolean;
 
     constructor(username: string, apikey: string) {
         this.url = 'https://digi.rupikun.com/v1/'
         this.username = username
         this.apikey = apikey
-        this.isProd = process.env.NODE_ENV === 'production'
     }
 
     generateMD5(input: string) {
@@ -34,7 +32,7 @@ export class Digiflazz {
             }
         })
         const data = await req.json() as { data: { deposit: number } }
-        if(!this.isProd){
+        if (!(process.env.NODE_ENV === 'production')) {
             console.log(data)
         }
         return data.data.deposit
@@ -76,11 +74,13 @@ export class Digiflazz {
     async processTransactionPulsa({
         sku,
         phone_number,
-        webhook_url
+        webhook_url,
+        isProd=false,
     }:{
         sku:string;
         phone_number: string;
-        webhook_url: string
+        webhook_url: string;
+        isProd: boolean
     }){
         const ref_id = crypto.randomUUID()
         let payload: TRequestTransaction = {
@@ -91,11 +91,9 @@ export class Digiflazz {
             sign: this.getSign(ref_id),
             cb_url: webhook_url
         }
-
-        if (!this.isProd) {
+        if (!isProd) {
             payload = { ...payload, testing: true, customer_no: "087800001233", buyer_sku_code: "xld10" }
         }
-
         const response = await this.postRequest(payload)
         return response
     }

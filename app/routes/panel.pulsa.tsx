@@ -53,7 +53,9 @@ export async function getPricelist(env: Env) {
     })
     const p_sort = product.sort((a,b)=> a.price - b.price)
     if (product.length > 0) {
-        await cache.put(CACHE_KEYS.PULSA, JSON.stringify(p_sort))
+        await cache.put(CACHE_KEYS.PULSA, JSON.stringify(p_sort), {
+            expirationTtl: 60
+        })
         return p_sort
     }
     return []
@@ -70,7 +72,7 @@ export async function loader(req: LoaderFunctionArgs) {
 
 export async function action(req: ActionFunctionArgs) {
     const user = await allowAny(req)
-    const { DIGI_USERNAME, DIGI_APIKEY, WEBHOOK_URL } = req.context.cloudflare.env
+    const { DIGI_USERNAME, DIGI_APIKEY, WEBHOOK_URL, NODE_ENV } = req.context.cloudflare.env
     const formData = await req.request.formData()
     const form = JSON.parse(formData.get("json")?.toString() || '') as TFormPulsa
     const product = await getPricelist(req.context.cloudflare.env)
@@ -87,7 +89,8 @@ export async function action(req: ActionFunctionArgs) {
             const response = await digiflazz.processTransactionPulsa({
                 sku: paket.buyer_sku_code,
                 phone_number: form.phone_number,
-                webhook_url: WEBHOOK_URL
+                webhook_url: WEBHOOK_URL,
+                isProd: NODE_ENV==="production",
             })
             
             const transaction = await mydb.insert(ledgerTable).values({
