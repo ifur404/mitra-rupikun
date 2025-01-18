@@ -1,5 +1,5 @@
 import { Link, useLoaderData, useRouteLoaderData } from "@remix-run/react"
-import { ChevronLeft, Smartphone, Wifi, Zap } from 'lucide-react'
+import { ChevronLeft, Gamepad, Smartphone, Wifi, Zap } from 'lucide-react'
 import { Home, List, User } from "lucide-react";
 import { LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { allowAny } from "~/lib/auth.server";
@@ -7,10 +7,11 @@ import { db } from "~/drizzle/client.server";
 import { desc, eq } from "drizzle-orm";
 import { ledgerTable } from "~/drizzle/schema";
 import { formatCurrency } from "~/components/InputCurrency";
+import { Button } from "~/components/ui/button";
 
 const services = [
   { icon: Smartphone, label: "Pulsa", badge: "" },
-  // { icon: Wifi, label: "Paket Data", badge: "" },
+  { icon: Gamepad, label: "Game", badge: "" },
   // { icon: Zap, label: "PLN", badge: "" },
 ]
 const BOTTONNAVIGATION = [
@@ -45,6 +46,7 @@ export default function PanelHome() {
         <div>
           <div className="text-2xl font-bold">{formatCurrency(loaderData.saldo.toString())}</div>
           <p className="text-xs">Saldo</p>
+          <Link to="https://wa.me/6282122012959?text=Saya Mau Top Up Saldo Mitra" target="_blank"><Button size="sm" variant="outline">Top up</Button></Link>
         </div>
       </div>
 

@@ -38,7 +38,7 @@ export class Digiflazz {
         return data.data.deposit
     }
 
-    async priceList({ category }: { category: "Pulsa" | "Data" | "Game" }) {
+    async priceList({ category }: { category: DigiCategory }) {
         const req = await fetch(this.url + "price-list", {
             method: "POST",
             body: JSON.stringify({
@@ -170,3 +170,5 @@ export type TWebhookData = {
   tele: string;
   wa: string;
 }
+
+export type DigiCategory = "Pulsa" | "Data" | "Games"
