@@ -39,7 +39,7 @@ function identifyOperator(phoneNumber: string) {
     return null;
 }
 
-export async function getPricelist(env: Env, category: DigiCategory="Pulsa", cache_key:string=CACHE_KEYS.PULSA) {
+export async function getPricelist(env: Env, category: DigiCategory = "Pulsa", cache_key: string = CACHE_KEYS.PULSA) {
     const { DIGI_USERNAME, DIGI_APIKEY } = env
     const cache = env.KV
     const cache_data = await cache.get(cache_key)
@@ -51,7 +51,7 @@ export async function getPricelist(env: Env, category: DigiCategory="Pulsa", cac
     const product = await digiflazz.priceList({
         category: category,
     })
-    const p_sort = product.sort((a,b)=> a.price - b.price)
+    const p_sort = product.sort((a, b) => a.price - b.price)
     if (product.length > 0) {
         await cache.put(cache_key, JSON.stringify(p_sort), {
             expirationTtl: 60
@@ -90,9 +90,9 @@ export async function action(req: ActionFunctionArgs) {
                 sku: paket.buyer_sku_code,
                 phone_number: form.phone_number,
                 webhook_url: WEBHOOK_URL,
-                isProd: NODE_ENV==="production",
+                isProd: NODE_ENV === "production",
             })
-            
+
             const transaction = await mydb.insert(ledgerTable).values({
                 uuid: response.ref_id,
                 before: saldo.after,
@@ -103,11 +103,11 @@ export async function action(req: ActionFunctionArgs) {
                 created_by: user.id,
                 created_at: new Date().getTime(),
                 data: JSON.stringify({
-                    form, 
+                    form,
                     response: response,
                 }),
-            }).returning({uuid: ledgerTable.uuid})
-            
+            }).returning({ uuid: ledgerTable.uuid })
+
             throw redirect(`/panel/transaksi/${transaction[0].uuid}`)
         }
         return { error: "Saldo tidak cukup, silahkan topup terlebih dahulu", }
@@ -167,7 +167,7 @@ export default function PanelPulsa() {
         </div>
 
         <div className="space-y-4">
-            {loaderData.data.filter(e=>e.brand.toLowerCase()===form.operator?.value.toLowerCase()).map((e) => {
+            {loaderData.data.filter(e => e.brand.toLowerCase() === form.operator?.value.toLowerCase()).map((e) => {
                 return <div
                     key={e.buyer_sku_code}
                     onClick={() => {
@@ -182,36 +182,27 @@ export default function PanelPulsa() {
                 </div>
             })}
         </div>
-        <div className="fixed bottom-0 left-0 w-full ">
-            <div className="max-w-md mx-auto bg-white flex justify-between border p-4 rounded-lg">
-                <div>
-                    <div className="text-gray-800">Total Harga</div>
-                    <b className="text-xl">{formatCurrency(form.paket?.price.toString() || "0")}</b>
-                </div>
-                <div>
-                    <ProcessBayar form={form} />
-                </div>
-            </div>
-        </div>
-    </div>
+
+        <ProcessBayar form={form} />
+
+    </div >
 }
 
 function ProcessBayar({ form }: { form: TFormPulsa }) {
     const selectedKeys = ['product_name', 'category', 'brand', 'type', 'seller_name', 'price', 'buyer_sku_code'] as any;
-    const { paket } = form
 
     const fetcher = useFetcher<typeof action>()
     const loading = fetcher.state !== "idle"
 
     useEffect(() => {
         if (fetcher.state === "idle") {
-          if (fetcher.data?.error) {
-            toast.error(fetcher.data.error, {
-                position: 'top-center'
-            })
-          }
+            if (fetcher.data?.error) {
+                toast.error(fetcher.data.error, {
+                    position: 'top-center'
+                })
+            }
         }
-      }, [fetcher.state]);
+    }, [fetcher.state]);
 
     function processBayar() {
         const data = new FormData();
@@ -223,34 +214,44 @@ function ProcessBayar({ form }: { form: TFormPulsa }) {
         })
     }
 
-    return <Drawer>
-        <DrawerTrigger asChild>
-            <Button>Proses Bayar</Button>
-        </DrawerTrigger>
-        <DrawerContent>
-            <DrawerHeader>
-                <DrawerTitle>Apakah kamu yakin ?</DrawerTitle>
-                <DrawerDescription>Pembelian tidak dapat dibatalkan</DrawerDescription>
-            </DrawerHeader>
-            <div className="p-4">
-                {Object.entries(pickKeys(form.paket || {}, selectedKeys)).map(([key, value]) => (
-                    <div key={key} className="flex justify-between border-b border-gray-200 py-2">
-                        <span className="text-gray-600">{key.split("_").join(" ")}</span>
-                        <span className="text-gray-900 font-medium">
-                            {formatValue(key, value)}
-                        </span>
-                    </div>
-                ))}
-                {fetcher.data?.error && <p className="py-4 text-red-500 text-center">{fetcher.data?.error}</p> }
-                <div className="flex gap-8 justify-center mb-20 w-full mt-4">
-                    <DrawerClose asChild>
-                        <Button variant="destructive" >Batal</Button>
-                    </DrawerClose>
-                    <Button onClick={processBayar} disabled={loading}>{loading ? "Loading..." : "Lanjutkan"}</Button>
-                </div>
+    return <div className="fixed bottom-0 left-0 w-full ">
+        <div className="max-w-md mx-auto bg-white flex justify-between border p-4 rounded-lg">
+            <div>
+                <div className="text-gray-800">Total Harga</div>
+                <b className="text-xl">{formatCurrency(form.paket?.price.toString() || "0")}</b>
             </div>
-        </DrawerContent>
-    </Drawer>
+            <div>
+                <Drawer>
+                    <DrawerTrigger asChild>
+                        <Button>Proses Bayar</Button>
+                    </DrawerTrigger>
+                    <DrawerContent>
+                        <DrawerHeader>
+                            <DrawerTitle>Apakah kamu yakin ?</DrawerTitle>
+                            <DrawerDescription>Pembelian tidak dapat dibatalkan</DrawerDescription>
+                        </DrawerHeader>
+                        <div className="p-4">
+                            {Object.entries(pickKeys(form.paket || {}, selectedKeys)).map(([key, value]) => (
+                                <div key={key} className="flex justify-between border-b border-gray-200 py-2">
+                                    <span className="text-gray-600">{key.split("_").join(" ")}</span>
+                                    <span className="text-gray-900 font-medium">
+                                        {formatValue(key, value)}
+                                    </span>
+                                </div>
+                            ))}
+                            {fetcher.data?.error && <p className="py-4 text-red-500 text-center">{fetcher.data?.error}</p>}
+                            <div className="flex gap-8 justify-center mb-20 w-full mt-4">
+                                <DrawerClose asChild>
+                                    <Button variant="destructive" >Batal</Button>
+                                </DrawerClose>
+                                <Button onClick={processBayar} disabled={loading}>{loading ? "Loading..." : "Lanjutkan"}</Button>
+                            </div>
+                        </div>
+                    </DrawerContent>
+                </Drawer>
+            </div>
+        </div>
+        </div>
 }
 
 export function pickKeys<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {

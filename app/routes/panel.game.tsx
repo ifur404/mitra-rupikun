@@ -1,9 +1,9 @@
 import { allowAny } from "~/lib/auth.server";
 import { BottonNav, HeaderBack } from "./panel._index";
-import { LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { getPricelist } from "./panel.pulsa";
+import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from "@remix-run/cloudflare";
+import { formatValue, getPricelist, pickKeys } from "./panel.pulsa";
 import { CACHE_KEYS } from "~/data/cache";
-import { useLoaderData } from "@remix-run/react";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import { ReactNode, useEffect, useState } from "react";
 import { cn } from "~/lib/utils";
 import { formatCurrency } from "~/components/InputCurrency";
@@ -14,26 +14,71 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "~/components/ui/drawer";
 import { Button } from "~/components/ui/button";
 import { FileQuestion } from "lucide-react";
+import { db } from "~/drizzle/client.server";
+import { desc, eq } from "drizzle-orm";
+import { ledgerTable } from "~/drizzle/schema";
+import { LedgerTypeEnum } from "~/data/enum";
+import { toast } from "sonner";
 
 
 export async function loader(req: LoaderFunctionArgs) {
     const _ = await allowAny(req)
-    const { DIGI_USERNAME, DIGI_APIKEY } = req.context.cloudflare.env
-    await req.context.cloudflare.env.KV.delete(CACHE_KEYS.GAME)
-    // const digiflazz = new Digiflazz(DIGI_USERNAME, DIGI_APIKEY)
-    // const product = await digiflazz.priceList({
-    //     category: "Games",
-    // })
-    // console.log(product)
+    // await req.context.cloudflare.env.KV.delete(CACHE_KEYS.GAME)
     const product = await getPricelist(req.context.cloudflare.env, "Games", CACHE_KEYS.GAME)
 
-    const brand = [...new Set(product.map(e => e.brand))].sort((a,b)=> a.localeCompare(b))
+    const brand = [...new Set(product.map(e => e.brand))].sort((a, b) => a.localeCompare(b))
 
     return {
         data: product,
         brand
     }
 
+}
+
+export async function action(req: ActionFunctionArgs) {
+    const user = await allowAny(req)
+    const { DIGI_USERNAME, DIGI_APIKEY, WEBHOOK_URL, NODE_ENV } = req.context.cloudflare.env
+    const formData = await req.request.formData()
+    const form = JSON.parse(formData.get("json")?.toString() || '') as TFormGame
+    const product = await getPricelist(req.context.cloudflare.env, 'Games', CACHE_KEYS.GAME)
+    const paket = product.find(e => e.buyer_sku_code === form.product?.buyer_sku_code)
+    if (!paket) throw new Error("Error")
+    const mydb = db(req.context.cloudflare.env.DB)
+    const saldo = await mydb.query.ledgerTable.findFirst({
+        where: eq(ledgerTable.key, user.id),
+        orderBy: desc(ledgerTable.created_at)
+    })
+    if (saldo) {
+        if (saldo.after > paket.price) {
+            const digiflazz = new Digiflazz(DIGI_USERNAME, DIGI_APIKEY)
+            const response = await digiflazz.processTransactionPulsa({
+                sku: paket.buyer_sku_code,
+                phone_number: form.game_id,
+                webhook_url: WEBHOOK_URL,
+                isProd: NODE_ENV === "production",
+            })
+
+            const transaction = await mydb.insert(ledgerTable).values({
+                uuid: response.ref_id,
+                before: saldo.after,
+                mutation: paket.price,
+                after: saldo.after - paket.price,
+                key: user.id,
+                type: LedgerTypeEnum.PURCHASE_GAME,
+                created_by: user.id,
+                created_at: new Date().getTime(),
+                data: JSON.stringify({
+                    form,
+                    response: response,
+                }),
+            }).returning({ uuid: ledgerTable.uuid })
+
+            throw redirect(`/panel/transaksi/${transaction[0].uuid}`)
+        }
+        return { error: "Saldo tidak cukup, silahkan topup terlebih dahulu", }
+    }
+
+    throw new Error("Failed")
 }
 
 export type TFormGame = {
@@ -75,7 +120,7 @@ export default function panelgame() {
                 {form.brand === "MOBILE LEGENDS" ? <FormMobileLegend onChange={(d) => {
                     setForm(cur => ({ ...cur, game_id: d }))
                 }} /> : <>
-                    {!form.brand && (
+                    {form.brand && (
                         <>
                             <Label htmlFor="game_id">Game ID : </Label>
                             <div className="flex justify-between gap-4">
@@ -87,7 +132,7 @@ export default function panelgame() {
                                     <img src="/assets/sample_profile_freefire.png" alt="Sample Free Fire" className="w-full" />
                                     <div className="mt-8 p-8">
                                         <h1>Cara Menemukan Player ID di Free Fire</h1>
-                                        <ol>
+                                        <ol className="list-inside list-decimal">
                                             <li>
                                                 <strong>Buka Free Fire:</strong> Jalankan aplikasi game Free Fire di perangkat Anda.
                                             </li>
@@ -123,9 +168,76 @@ export default function panelgame() {
                 })}
             </div>
 
-            <BottonNav />
+            <ProcessBayar form={form}/>
+
         </div>
     )
+}
+
+function ProcessBayar({ form }: { form: TFormGame }) {
+    const selectedKeys = ['product_name', 'category', 'brand', 'type', 'seller_name', 'price', 'buyer_sku_code'] as any;
+
+    const fetcher = useFetcher<typeof action>()
+    const loading = fetcher.state !== "idle"
+
+    useEffect(() => {
+        if (fetcher.state === "idle") {
+            if (fetcher.data?.error) {
+                toast.error(fetcher.data.error, {
+                    position: 'top-center'
+                })
+            }
+        }
+    }, [fetcher.state]);
+
+    function processBayar() {
+        const data = new FormData();
+        data.append("intent", "process")
+        data.append("json", JSON.stringify(form));
+        fetcher.submit(data, {
+            action: '?index',
+            method: "POST"
+        })
+    }
+
+    return <div className="fixed bottom-0 left-0 w-full ">
+        <div className="max-w-md mx-auto bg-white flex justify-between border p-4 rounded-lg">
+            <div>
+                <div className="text-gray-800">Total Harga</div>
+                <b className="text-xl">{formatCurrency(form.product?.price.toString() || "0")}</b>
+            </div>
+            <div>
+                <Drawer>
+                    <DrawerTrigger asChild disabled={!form.product}>
+                        <Button  disabled={!form.product}>Proses Bayar</Button>
+                    </DrawerTrigger>
+                    <DrawerContent>
+                        <DrawerHeader>
+                            <DrawerTitle>Apakah kamu yakin ?</DrawerTitle>
+                            <DrawerDescription>Pembelian tidak dapat dibatalkan</DrawerDescription>
+                        </DrawerHeader>
+                        <div className="p-4">
+                            {Object.entries(pickKeys(form.product || {}, selectedKeys)).map(([key, value]) => (
+                                <div key={key} className="flex justify-between border-b border-gray-200 py-2">
+                                    <span className="text-gray-600">{key.split("_").join(" ")}</span>
+                                    <span className="text-gray-900 font-medium">
+                                        {formatValue(key, value)}
+                                    </span>
+                                </div>
+                            ))}
+                            {fetcher.data?.error && <p className="py-4 text-red-500 text-center">{fetcher.data?.error}</p>}
+                            <div className="flex gap-8 justify-center mb-20 w-full mt-4">
+                                <DrawerClose asChild>
+                                    <Button variant="destructive" >Batal</Button>
+                                </DrawerClose>
+                                <Button onClick={processBayar} disabled={loading}>{loading ? "Loading..." : "Lanjutkan"}</Button>
+                            </div>
+                        </div>
+                    </DrawerContent>
+                </Drawer>
+            </div>
+        </div>
+    </div>
 }
 
 function FormMobileLegend({ onChange }: { onChange: (d: string) => void }) {
@@ -151,7 +263,7 @@ function FormMobileLegend({ onChange }: { onChange: (d: string) => void }) {
                 <img src="/assets/sample_profile_ml.png" alt="Sample ML" className="w-full" />
                 <div className="p-8 mt-8">
                     <h1>Cara Menemukan User ID dan Zone ID di Mobile Legends</h1>
-                    <ol>
+                    <ol className="list-inside list-decimal">
                         <li>
                             <strong>Buka Mobile Legends:</strong> Jalankan aplikasi game Mobile Legends di perangkat Anda.
                         </li>
