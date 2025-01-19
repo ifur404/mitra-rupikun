@@ -85,7 +85,7 @@ export function HeaderBack({ title, back_to = "/panel" }: { title: string; back_
 }
 
 export function BottonNav() {
-  return <div className="fixed bottom-0 left-0 w-full ">
+  return <div className="fixed bottom-0 left-0 w-full safe-bottom">
     <div className="max-w-md mx-auto bg-white">
       <div className="grid grid-cols-3 gap-4 px-4 py-2 border rounded-lg">
         {BOTTONNAVIGATION.map((m, index) => {
