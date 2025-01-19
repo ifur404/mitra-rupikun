@@ -107,7 +107,11 @@ export async function action(req: ActionFunctionArgs) {
         })
 
         await sendIpurNotification(`Webhook \n${JSON.stringify(webhookPayload.formdata, null, "\t")}`, req.context.cloudflare.env.TELEGRAM_TOKEN)
+        // if(webhookPayload.formdata.status === "Sukses"){
+        //     await mydb.insert(ledgerTable).values({
 
+        //     })
+        // }
         emitter.emit("/");
         emitter.emit(`/panel/transaksi/${data.ref_id}`);
     }

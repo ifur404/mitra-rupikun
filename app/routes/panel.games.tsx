@@ -1,5 +1,5 @@
 import { allowAny } from "~/lib/auth.server";
-import { BottonNav, HeaderBack } from "./panel._index";
+import { HeaderBack } from "./panel._index";
 import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from "@remix-run/cloudflare";
 import { formatValue, getPricelist, pickKeys } from "./panel.pulsa";
 import { CACHE_KEYS } from "~/data/cache";
@@ -11,7 +11,7 @@ import { Digiflazz, TPriceList } from "~/lib/digiflazz";
 import { Label } from "~/components/ui/label";
 import { Input } from "~/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "~/components/ui/drawer";
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "~/components/ui/drawer";
 import { Button } from "~/components/ui/button";
 import { FileQuestion } from "lucide-react";
 import { db } from "~/drizzle/client.server";
@@ -23,8 +23,8 @@ import { toast } from "sonner";
 
 export async function loader(req: LoaderFunctionArgs) {
     const _ = await allowAny(req)
-    // await req.context.cloudflare.env.KV.delete(CACHE_KEYS.GAME)
-    const product = await getPricelist(req.context.cloudflare.env, "Games", CACHE_KEYS.GAME)
+    // await req.context.cloudflare.env.KV.delete(CACHE_KEYS.GAMES)
+    const product = await getPricelist(req.context.cloudflare.env, "Games", CACHE_KEYS.GAMES)
 
     const brand = [...new Set(product.map(e => e.brand))].sort((a, b) => a.localeCompare(b))
 
@@ -40,7 +40,7 @@ export async function action(req: ActionFunctionArgs) {
     const { DIGI_USERNAME, DIGI_APIKEY, WEBHOOK_URL, NODE_ENV } = req.context.cloudflare.env
     const formData = await req.request.formData()
     const form = JSON.parse(formData.get("json")?.toString() || '') as TFormGame
-    const product = await getPricelist(req.context.cloudflare.env, 'Games', CACHE_KEYS.GAME)
+    const product = await getPricelist(req.context.cloudflare.env, 'Games', CACHE_KEYS.GAMES)
     const paket = product.find(e => e.buyer_sku_code === form.product?.buyer_sku_code)
     if (!paket) throw new Error("Error")
     const mydb = db(req.context.cloudflare.env.DB)

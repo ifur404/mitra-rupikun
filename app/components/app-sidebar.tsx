@@ -30,13 +30,17 @@ const data = {
       url: "/dashboard/user",
     },
     {
-      title: "Product",
-      url: "/dashboard/product",
+      title: "Product2",
+      url: "/dashboard/product2",
     },
-    {
-      title: "Transaction",
-      url: "/dashboard/transaction",
-    },
+    // {
+    //   title: "Product",
+    //   url: "/dashboard/product",
+    // },
+    // {
+    //   title: "Transaction",
+    //   url: "/dashboard/transaction",
+    // },
     {
       title: "Master Data",
       url: "#",

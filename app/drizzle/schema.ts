@@ -32,6 +32,7 @@ export const tagTable = sqliteTable('tag', {
 
 export const productTable = sqliteTable('product', {
     id: integer().primaryKey(),
+    code: text(),
     name: text(),
     price: integer(),
     price_sell: integer(),
@@ -106,3 +107,18 @@ export const ledgerTable = sqliteTable('ledger', {
     created_at: integer().$default(() => new Date().getTime()), // Timestamp of the transaction
 });
 
+export const product2Table = sqliteTable('product2', {
+    id: integer().primaryKey(),
+    code: text().notNull().unique(),
+    name: text(),
+    price: integer(),
+    data: text(), //json struktur
+    created_at: integer().$default(() => new Date().getTime()),
+    created_by: integer().references(() => userTable.id, {
+        onDelete: "cascade",
+    }),
+    updated_at: integer().$default(() => new Date().getTime()),
+    updated_by: integer().references(() => userTable.id, {
+        onDelete: "cascade",
+    })
+});

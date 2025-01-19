@@ -1,6 +1,6 @@
 export const CACHE_KEYS = {
     PULSA: 'pulsa',
-    GAME: 'game',
+    GAMES: 'games',
     DATA: 'data',
     SALDO_GLOBAL: 'saldo'
 };

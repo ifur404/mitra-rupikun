@@ -9,9 +9,9 @@ import { ledgerTable } from "~/drizzle/schema";
 import { formatCurrency } from "~/components/InputCurrency";
 import { Button } from "~/components/ui/button";
 
-const services = [
+export const OPTION_SERVICES = [
   { icon: Smartphone, label: "Pulsa", badge: "" },
-  { icon: Gamepad, label: "Game", badge: "" },
+  { icon: Gamepad, label: "Games", badge: "" },
   // { icon: Zap, label: "PLN", badge: "" },
 ]
 const BOTTONNAVIGATION = [
@@ -51,7 +51,7 @@ export default function PanelHome() {
       </div>
 
       <div className="grid grid-cols-grid grid-cols-3 gap-4 w-full mt-4 border rounded-lg p-4">
-        {services.map((service, index) => {
+        {OPTION_SERVICES.map((service, index) => {
           const Icon = service.icon
           const url = `${service.label.toLowerCase()}`
           return (
