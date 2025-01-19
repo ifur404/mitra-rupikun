@@ -12,7 +12,7 @@ import { userTable } from "~/drizzle/schema";
 
 export const meta: MetaFunction = () => {
     return [
-        { title: "Masuk Akun | Ujian" },
+        { title: "Masuk Akun" },
     ];
 };
 

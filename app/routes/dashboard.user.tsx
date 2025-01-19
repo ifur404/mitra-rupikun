@@ -26,7 +26,7 @@ export async function loader(req: LoaderFunctionArgs) {
   const user = await onlyStaff(req)
   const url = new URL(req.request.url)
   const mydb = db(req.context.cloudflare.env.DB)
-  const filter = sqlPagination(url)
+  const filter = sqlPagination(url, 'name')
   const search = url.searchParams
   const mytable = userTable
   const searchableFields = [mytable.name, mytable.phone_number, mytable.email, mytable.groups]
@@ -45,7 +45,7 @@ export async function loader(req: LoaderFunctionArgs) {
     .where(where)
     .limit(filter.limit)
     .offset(filter.offset)
-    .orderBy(desc(mytable.created_at))
+    .orderBy(filter.ordering)
 
   return {
     data: data,
@@ -73,7 +73,7 @@ export async function action(req: ActionFunctionArgs) {
     const user_id = Number(formData.get("user_id"))
     const append_balance = convertCurrencyToDecimal(formData.get("amount")?.toString() || '0')
     const before = await mydb.query.ledgerTable.findFirst({
-      where: and(eq(ledgerTable.key, user_id), eq(ledgerTable.type, LedgerTypeEnum.TOPUP)),
+      where: and(eq(ledgerTable.key, user_id)),
       orderBy: desc(ledgerTable.created_at)
     })
     const before_balance = before?.id ? Number(before.before) : 0
