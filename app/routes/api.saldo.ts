@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { json, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { and, desc, eq, or } from "drizzle-orm";
 import { db } from "~/drizzle/client.server";
 import { ledgerTable } from "~/drizzle/schema";
@@ -16,11 +16,11 @@ export async function loader(req: LoaderFunctionArgs) {
         eq(ledgerTable.key, Number(key)).if(key),
         eq(ledgerTable.type, String(type)).if(type),
     )
-        
-    const data = await mydb.query.ledgerTable.findMany({
+    
+    const data = await mydb.query.ledgerTable.findFirst({
         where: where,
-        limit: filter.limit,
         orderBy: desc(ledgerTable.created_at)
     })
-    return Response.json(data)
+    const saldo = data?.after || 0
+    return json({saldo: saldo})
 }

@@ -1,5 +1,5 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare"
-import { useFetcher, useLoaderData, useSearchParams } from "@remix-run/react"
+import { useFetcher, useLoaderData, useRevalidator, useSearchParams } from "@remix-run/react"
 import { ColumnDef } from "@tanstack/react-table"
 import { and, desc, eq, getTableColumns, like, or, sql } from "drizzle-orm"
 import { ChevronDown, Edit } from "lucide-react"
@@ -177,10 +177,12 @@ export function ShowIsBoolean({ num }: { num: number }) {
 }
 
 function ShowSaldo({ data }: { data: TData }) {
-  const [show, setShow] = useState(false)
-  const fetcher = useFetcher<typeof action>()
+  const { revalidate } = useRevalidator();
+
   const b = useUserBalance(data.id)
-  const balance = (b.fetcher?.data && b.fetcher?.data?.length > 0) ? b?.fetcher?.data[0].after : 0
+  const [show, setShow] = useState(false)
+  const fetcher = useFetcher<typeof action>({ key: `topup_${data.id}` })
+  const balance = b.saldo
   const balance_idr = formatCurrency(balance.toString())
 
   function toggleShow() {
@@ -191,6 +193,7 @@ function ShowSaldo({ data }: { data: TData }) {
       if (fetcher.data?.success) {
         toast.error("Berhasil top up ")
         toggleShow()
+        revalidate()
       }
       if (fetcher.data?.error) {
         toast.error("Failed")
