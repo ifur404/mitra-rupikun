@@ -17,7 +17,7 @@ export async function loader(req: LoaderFunctionArgs) {
     const user = await onlyStaff(req)
     const url = new URL(req.request.url)
     const mydb = db(req.context.cloudflare.env.DB)
-    const filter = sqlPagination(url, 'id desc')
+    const filter = sqlPagination(url, 'created_at desc')
     const search = url.searchParams
     const mytable = ledgerTable
     const allColumns = getTableColumns(mytable)

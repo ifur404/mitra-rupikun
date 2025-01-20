@@ -11,7 +11,7 @@ export function sqlPagination(url: URL, defaultSort='id desc'): {
     const offset = (page - 1) * limit;
     const ordering = url.searchParams.get('ordering') || ''
 
-    let sort = sql`${defaultSort}`
+    let sort = sql.raw(`${defaultSort}`)
     if (ordering && ordering !== "") {
         const desc = ordering.startsWith("-")
         const column = desc ? ordering.slice(1) : ordering
