@@ -95,14 +95,12 @@ export default function paneltransaksi() {
             </Link>
           }
 
-          if ([LedgerTypeEnum.PURCHASE_PULSA, LedgerTypeEnum.PURCHASE, LedgerTypeEnum.PURCHASE_GAME].includes(e.type)) {
-            const status = e.data?.done ? e.data.done.status : e.data.response?.status
-            return <Link to={`/panel/transaksi/${e.uuid}`} key={e.uuid} className="p-4 rounded-lg border">
-              <div>Pembelian - {e.data.form?.paket?.product_name}</div>
-              <b>{formatCurrency(e.mutation?.toString() || '')}</b>
-              <div className="text-xs">{e.data.form?.phone_number} - {status}</div>
-            </Link>
-          }
+          const status = e.data?.done ? e.data.done.status : e.data.response?.status
+          return <Link to={`/panel/transaksi/${e.uuid}`} key={e.uuid} className="p-4 rounded-lg border">
+            <div>Pembelian - {e.data.form?.paket?.product_name}</div>
+            <b>{formatCurrency(e.mutation?.toString() || '')}</b>
+            <div className="text-xs">{e.data.form?.phone_number} - {status}</div>
+          </Link>
 
         })}
       </div>
