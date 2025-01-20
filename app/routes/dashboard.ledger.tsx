@@ -1,27 +1,23 @@
-import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { ColumnDef } from "@tanstack/react-table";
-import { and, eq, or, like, sql, getTableColumns } from "drizzle-orm";
+import { and, or, like, sql, getTableColumns } from "drizzle-orm";
 import { DataTable } from "~/components/datatable";
 import FormSearch from "~/components/FormSearch";
-import InputCurrency, { convertCurrencyToDecimal, formatCurrency } from "~/components/InputCurrency";
+import { formatCurrency } from "~/components/InputCurrency";
 import { PaginationPage } from "~/components/pagination-page";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import { db } from "~/drizzle/client.server";
 import { ledgerTable } from "~/drizzle/schema";
 import { onlyStaff } from "~/lib/auth.server";
 import { sqlPagination } from "~/lib/query.server";
 import { dateFormat } from "~/lib/time";
-import { getPricelist } from "./panel.pulsa";
-import { DigiCategory } from "~/lib/digiflazz";
 import OpenDetail from "~/components/OpenDetail";
 
 export async function loader(req: LoaderFunctionArgs) {
     const user = await onlyStaff(req)
     const url = new URL(req.request.url)
     const mydb = db(req.context.cloudflare.env.DB)
-    const filter = sqlPagination(url, 'created_at desc')
+    const filter = sqlPagination(url, 'id desc')
     const search = url.searchParams
     const mytable = ledgerTable
     const allColumns = getTableColumns(mytable)

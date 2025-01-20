@@ -28,7 +28,7 @@ export async function loader(req: LoaderFunctionArgs) {
   const user = await allowAny(req)
   const mydb = db(req.context.cloudflare.env.DB)
   const url = new URL(req.request.url)
-  const filter = sqlPagination(url)
+  const filter = sqlPagination(url, 'created_at desc')
   const searchableFields = [ledgerTable.key, ledgerTable.id, ledgerTable.data]
 
   const { key, type } = Object.fromEntries(url.searchParams)
@@ -48,7 +48,7 @@ export async function loader(req: LoaderFunctionArgs) {
     .where(where)
     .limit(filter.limit)
     .offset(filter.offset)
-    .orderBy(desc(ledgerTable.created_at))
+    .orderBy(filter.ordering)
 
   return {
     data: data.map(e => {
@@ -89,19 +89,21 @@ export default function paneltransaksi() {
           if (!e.uuid) return null
           if (LedgerTypeEnum.TOPUP === e.type) {
             return <Link to={`/panel/transaksi/${e.uuid}`} key={e.uuid} className="p-4 rounded-lg border">
-              <div>Top Up </div>
+              <div>Perubahan Saldo</div>
               <b>{formatCurrency(e.mutation?.toString() || '')}</b>
               <div className="text-xs mt-2">{e.data?.topup?.note || ''}</div>
             </Link>
           }
-          if ([LedgerTypeEnum.PURCHASE_PULSA, LedgerTypeEnum.PURCHASE].includes(e.type)) {
+
+          if ([LedgerTypeEnum.PURCHASE_PULSA, LedgerTypeEnum.PURCHASE, LedgerTypeEnum.PURCHASE_GAME].includes(e.type)) {
             const status = e.data?.done ? e.data.done.status : e.data.response?.status
-          return <Link to={`/panel/transaksi/${e.uuid}`} key={e.uuid} className="p-4 rounded-lg border">
-            <div>Pembelian Pulsa - {e.data.form?.paket?.product_name}</div>
-            <b>{formatCurrency(e.mutation?.toString() || '')}</b>
-            <div className="text-xs">{e.data.form?.phone_number} - {status}</div>
-          </Link>
+            return <Link to={`/panel/transaksi/${e.uuid}`} key={e.uuid} className="p-4 rounded-lg border">
+              <div>Pembelian - {e.data.form?.paket?.product_name}</div>
+              <b>{formatCurrency(e.mutation?.toString() || '')}</b>
+              <div className="text-xs">{e.data.form?.phone_number} - {status}</div>
+            </Link>
           }
+
         })}
       </div>
       <PaginationPage page={loaderData.page} onChangePage={(e) => {
