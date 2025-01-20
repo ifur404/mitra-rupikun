@@ -15,9 +15,10 @@ import { PaginationPage } from "~/components/pagination-page";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Search } from "lucide-react";
+import { TFormGame } from "./panel.games";
 
 export type TDataLedger = {
-  form?: TFormPulsa;
+  form: TFormPulsa | TFormGame | TFormTopUp;
   response?: TResponseTransaction;
   done?: TWebhookData;
   topup?: TFormTopUp;
@@ -87,7 +88,7 @@ export default function paneltransaksi() {
       <div className="flex flex-col gap-4">
         {loaderData.data.map((e, i) => {
           if (!e.uuid) return null
-          if (LedgerTypeEnum.TOPUP === e.type) {
+          if ([LedgerTypeEnum.TOPUP, LedgerTypeEnum.BALANCE_USER].includes(e.type)) {
             return <Link to={`/panel/transaksi/${e.uuid}`} key={e.uuid} className="p-4 rounded-lg border">
               <div>Perubahan Saldo</div>
               <b>{formatCurrency(e.mutation?.toString() || '')}</b>
@@ -95,13 +96,23 @@ export default function paneltransaksi() {
             </Link>
           }
 
+          if (LedgerTypeEnum.PURCHASE_GAME === e.type) {
+            const status = e.data?.done ? e.data.done.status : e.data.response?.status
+            const form = e.data.form as TFormGame
+            return <Link to={`/panel/transaksi/${e.uuid}`} key={e.uuid} className="p-4 rounded-lg border">
+              <div>Pembelian - {form.product?.product_name}</div>
+              <b>{formatCurrency(e.mutation?.toString() || '')}</b>
+              <div className="text-xs">{form.game_id} - {status}</div>
+            </Link>
+          }
+
+          const form = e.data.form as TFormPulsa
           const status = e.data?.done ? e.data.done.status : e.data.response?.status
           return <Link to={`/panel/transaksi/${e.uuid}`} key={e.uuid} className="p-4 rounded-lg border">
-            <div>Pembelian - {e.data.form?.paket?.product_name}</div>
+            <div>Pembelian - {form.paket?.product_name}</div>
             <b>{formatCurrency(e.mutation?.toString() || '')}</b>
-            <div className="text-xs">{e.data.form?.phone_number} - {status}</div>
+            <div className="text-xs">{form.phone_number} - {status}</div>
           </Link>
-
         })}
       </div>
       <PaginationPage page={loaderData.page} onChangePage={(e) => {
