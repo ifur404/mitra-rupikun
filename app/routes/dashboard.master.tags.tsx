@@ -56,22 +56,22 @@ export async function loader(req: LoaderFunctionArgs) {
   }
 }
 
-export async function action(req:ActionFunctionArgs) {
+export async function action(req: ActionFunctionArgs) {
   const user = await onlyStaff(req)
   const formData = await req.request.formData()
 
   const mydb = db(req.context.cloudflare.env.DB)
   const intent = formData.get("intent")
-  
+
   try {
-    if(intent==="ADD_DATA"){
+    if (intent === "ADD_DATA") {
       await mydb.insert(tagTable).values({
         ...Object.fromEntries(formData),
         created_by: user.id,
         updated_by: user.id,
       })
     }
-    if(intent==="EDIT_DATA"){
+    if (intent === "EDIT_DATA") {
       const data = Object.fromEntries(formData)
       const id = Number(data.id)
       await mydb.update(tagTable).set({
@@ -80,26 +80,26 @@ export async function action(req:ActionFunctionArgs) {
         updated_at: new Date().getTime(),
       }).where(eq(tagTable.id, id))
     }
-    
-    if(intent==="DELETE"){
+
+    if (intent === "DELETE") {
       const id = Number(formData.get("id"))
       await mydb.delete(tagTable).where(eq(tagTable.id, id))
     }
     return {
       success: true
     }
-    
+
   } catch (error) {
-    return {error: "Failed"}
+    return { error: "Failed" }
   }
 }
 type TData = typeof tagTable.$inferSelect
 const collums: ColumnDef<TData>[] = [
   {
-    cell: (d)=> <div className="flex gap-2">
-      <ButtonEdit data={d.row.original}/>
+    cell: (d) => <div className="flex gap-2">
+      <ButtonEdit data={d.row.original} />
       <ActionDelete id={d.row.original.id}>
-        <Button size="sm"><Trash size={20}/></Button>
+        <Button size="sm"><Trash size={20} /></Button>
       </ActionDelete>
     </div>,
     header: "Action"
@@ -121,7 +121,7 @@ const collums: ColumnDef<TData>[] = [
   },
   {
     id: "description",
-    cell: (d)=> <OpenDetail str={d.row.original?.description || ''}/>,
+    cell: (d) => <OpenDetail str={d.row.original?.description || ''} />,
     header: "Description"
   },
   {
@@ -146,13 +146,15 @@ export default function dashboardmastertags() {
       <div className="text-2xl font-bold">Tags</div>
       <FormSearch action={<>
         <AddData />
-      </>}/>
+      </>} />
       <DataTable data={loadData.data} columns={collums} />
 
       <PaginationPage page={loadData.page} onChangePage={(e) => {
-        const params = new URLSearchParams();
-        params.set("page", e.toString());
-        setParams(params, {
+        setParams((prev) => {
+          const p = new URLSearchParams(prev)
+          p.set("page", e.toString())
+          return p
+        }, {
           preventScrollReset: true,
         });
       }} />
@@ -165,26 +167,26 @@ function ButtonEdit({ data }: { data: TData }) {
   return <SheetAction keyReq={`EDIT_${data.id}`} title="Edit Data" triger={<Button size="sm"><Edit size={20} /></Button>}>
     <input name="intent" value="EDIT_DATA" hidden readOnly />
     <input name="id" value={data.id} hidden readOnly />
-    <RenderForm data={data}/>
+    <RenderForm data={data} />
   </SheetAction>
 }
 
-function AddData(){
-  return <SheetAction title="Add Data" triger={<Button><Plus className="mr-2"/> Add Data</Button>}>
-    <input name="intent" value="ADD_DATA" hidden readOnly/>
+function AddData() {
+  return <SheetAction title="Add Data" triger={<Button><Plus className="mr-2" /> Add Data</Button>}>
+    <input name="intent" value="ADD_DATA" hidden readOnly />
     <RenderForm />
   </SheetAction>
 }
 
-function RenderForm({data}:{data?:TData}){
+function RenderForm({ data }: { data?: TData }) {
   return <>
-  <div>
+    <div>
       <Label htmlFor="name">Name</Label>
-      <Input name="name" placeholder="Name" defaultValue={data?.name || ''}/>
+      <Input name="name" placeholder="Name" defaultValue={data?.name || ''} />
     </div>
     <div>
       <Label htmlFor="type">Type</Label>
-      <Input name="type" placeholder="type" defaultValue={data?.type || ''}/>
+      <Input name="type" placeholder="type" defaultValue={data?.type || ''} />
     </div>
     <div>
       <Label htmlFor="description">Description</Label>

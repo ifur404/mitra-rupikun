@@ -162,9 +162,11 @@ export default function DashboardUser() {
       <DataTable data={loadData.data} columns={collums} />
 
       <PaginationPage page={loadData.page} onChangePage={(e) => {
-        const params = new URLSearchParams();
-        params.set("page", e.toString());
-        setParams(params, {
+        setParams((prev) => {
+          const p = new URLSearchParams(prev)
+          p.set("page", e.toString())
+          return p
+        }, {
           preventScrollReset: true,
         });
       }} />

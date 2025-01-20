@@ -51,20 +51,20 @@ export async function loader(req: LoaderFunctionArgs) {
 
 type TData = typeof webhookTable.$inferSelect
 const collums: ColumnDef<TData>[] = [
-  {
-    id: "id",
-    accessorKey: 'id',
-    header: "ID"
-  },
-  {
-    cell: (d) => <OpenDetail str={d.row.original.data || ''} view="textarea"/>,
-    header: "Data"
-  },
-  {
-    id: "created_at",
-    accessorFn: (d) => dateFormat(new Date(d.created_at || 0)),
-    header: "CreatedAt"
-  },
+    {
+        id: "id",
+        accessorKey: 'id',
+        header: "ID"
+    },
+    {
+        cell: (d) => <OpenDetail str={d.row.original.data || ''} view="textarea" />,
+        header: "Data"
+    },
+    {
+        id: "created_at",
+        accessorFn: (d) => dateFormat(new Date(d.created_at || 0)),
+        header: "CreatedAt"
+    },
 ]
 
 
@@ -81,9 +81,11 @@ export default function dashboarddigiflazzwebhook() {
             <DataTable data={loadData.data} columns={collums} />
 
             <PaginationPage page={loadData.page} onChangePage={(e) => {
-                const params = new URLSearchParams();
-                params.set("page", e.toString());
-                setParams(params, {
+                setParams((prev) => {
+                    const p = new URLSearchParams(prev)
+                    p.set("page", e.toString())
+                    return p
+                }, {
                     preventScrollReset: true,
                 });
             }} />

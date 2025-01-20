@@ -92,7 +92,7 @@ export async function action(req: ActionFunctionArgs) {
         success: true
       }
     }
-    
+
 
     if (intent === "EDIT_DATA") {
       const data = Object.fromEntries(formData)
@@ -162,7 +162,7 @@ export async function action(req: ActionFunctionArgs) {
       }
     }
 
-    if(intent==="UPDATE_DATA"){
+    if (intent === "UPDATE_DATA") {
       const id = Number(formData.get("id"))
       await mydb.update(productTable).set({
         data: JSON.stringify(JSON.parse(formData.get("data") as string)),
@@ -244,9 +244,11 @@ export default function DashboardProduct() {
       <DataTable data={loadData.data} columns={collums} />
 
       <PaginationPage page={loadData.page} onChangePage={(e) => {
-        const params = new URLSearchParams();
-        params.set("page", e.toString());
-        setParams(params, {
+        setParams((prev) => {
+          const p = new URLSearchParams(prev)
+          p.set("page", e.toString())
+          return p
+        }, {
           preventScrollReset: true,
         });
       }} />
@@ -255,7 +257,7 @@ export default function DashboardProduct() {
 }
 
 
-const initialProvider:TDataProvider = {
+const initialProvider: TDataProvider = {
   from: "digiflazz",
   digiflazz: undefined,
 }
@@ -266,7 +268,7 @@ function ShowProvider({ data }: { data: TData }) {
   const [value, setValue] = useState<TPriceList | undefined>(defaultP?.digiflazz)
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
-  const placeholder = `${defaultP.digiflazz?.product_name || ''} - ${defaultP.digiflazz?.seller_name}` 
+  const placeholder = `${defaultP.digiflazz?.product_name || ''} - ${defaultP.digiflazz?.seller_name}`
 
   useEffect(() => {
     if (open && fetcher.data === undefined) {
@@ -289,7 +291,7 @@ function ShowProvider({ data }: { data: TData }) {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-full p-0">
-          <FormProvider product={fetcher.data} value={value} setValue={setValue} id={data.id}/>
+          <FormProvider product={fetcher.data} value={value} setValue={setValue} id={data.id} />
         </PopoverContent>
       </Popover>
     )
@@ -310,17 +312,17 @@ function ShowProvider({ data }: { data: TData }) {
           </DrawerHeader>
         </VisuallyHidden>
         <div className="mt-4 border-t h-[50vh]">
-          <FormProvider product={fetcher.data} value={value} setValue={setValue} id={data.id}/>
+          <FormProvider product={fetcher.data} value={value} setValue={setValue} id={data.id} />
         </div>
       </DrawerContent>
     </Drawer>
   )
 }
 
-function FormProvider({ product = [], value, setValue, id }: { product?: TPriceList[], value?: TPriceList, setValue: Dispatch<SetStateAction<TPriceList | undefined>>; id:number }) {
+function FormProvider({ product = [], value, setValue, id }: { product?: TPriceList[], value?: TPriceList, setValue: Dispatch<SetStateAction<TPriceList | undefined>>; id: number }) {
   const fetcher_update = useFetcher<TResponse>({ key: `update_provider_${id}` })
 
-  function handleUpdate(selected?:TPriceList){
+  function handleUpdate(selected?: TPriceList) {
     const formData = new FormData()
     formData.append("intent", "UPDATE_DATA")
     formData.append("id", id.toString())
@@ -334,8 +336,8 @@ function FormProvider({ product = [], value, setValue, id }: { product?: TPriceL
   }
 
   return <>
-    <Command filter={(v, s, k)=> {
-      if(v.toLocaleLowerCase().includes(s.toLocaleLowerCase())){
+    <Command filter={(v, s, k) => {
+      if (v.toLocaleLowerCase().includes(s.toLocaleLowerCase())) {
         return 1
       }
       return 0
@@ -349,10 +351,10 @@ function FormProvider({ product = [], value, setValue, id }: { product?: TPriceL
               key={d.buyer_sku_code}
               value={d.product_name}
               onSelect={(v) => {
-                if(value?.buyer_sku_code === d.buyer_sku_code){
+                if (value?.buyer_sku_code === d.buyer_sku_code) {
                   setValue(undefined)
                   handleUpdate(undefined)
-                }else{
+                } else {
                   handleUpdate(d)
                   setValue(d)
                 }
