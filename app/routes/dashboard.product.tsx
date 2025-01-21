@@ -290,7 +290,3 @@ function SyncData() {
     </SheetAction>
 
 }
-
-function FilterData() {
-
-}

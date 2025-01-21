@@ -93,7 +93,7 @@ export default function paneltransaksi() {
             </Link>
           }
 
-          const title = e.data?.pulsa?.product?.product_name || e.data?.games?.product?.product_name
+          const title = e.data?.pulsa?.product?.name || e.data?.games?.product?.name
           const status = e.data?.webhook?.status || e.data?.response?.status
           return <Link to={`/panel/transaksi/${e.uuid}`} key={e.uuid} className="p-4 rounded-lg border">
             <div>{title}</div>

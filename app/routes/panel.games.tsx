@@ -16,8 +16,7 @@ import { Button } from "~/components/ui/button";
 import { FileQuestion } from "lucide-react";
 import { db } from "~/drizzle/client.server";
 import { desc, eq } from "drizzle-orm";
-import { ledgerTable } from "~/drizzle/schema";
-import { LedgerTypeEnum } from "~/data/enum";
+import { ledgerTable, productTable } from "~/drizzle/schema";
 import { toast } from "sonner";
 import { getListDB } from "~/lib/ledger.server";
 
@@ -40,7 +39,7 @@ export async function action(req: ActionFunctionArgs) {
     const formData = await req.request.formData()
     const form = JSON.parse(formData.get("json")?.toString() || '') as TFormGame
     const products = await getListDB(req.context.cloudflare.env, 'Games')
-    const product = products.find(e => e.code === form.product?.buyer_sku_code)
+    const product = products.find(e => e.code === form.product?.code)
     if (!product) throw new Error("Error")
     const mydb = db(req.context.cloudflare.env.DB)
     const saldo = await mydb.query.ledgerTable.findFirst({
@@ -82,7 +81,7 @@ export async function action(req: ActionFunctionArgs) {
 export type TFormGame = {
     game_id: string;
     brand: string;
-    product: TPriceList | null;
+    product: typeof productTable.$inferSelect | null;
 }
 
 export default function panelgame() {
@@ -154,9 +153,9 @@ export default function panelgame() {
                     return <div
                         key={e.code}
                         onClick={() => {
-                            setForm(cur => ({ ...cur, product: e.data }))
+                            setForm(cur => ({ ...cur, product: e }))
                         }}
-                        className={cn("p-4 rounded-lg cursor-pointer border-2", form.product?.buyer_sku_code === e.code ? "border-blue-500" : "")}
+                        className={cn("p-4 rounded-lg cursor-pointer border-2", form.product?.code === e.code ? "border-blue-500" : "")}
                     >
                         <div>{e.name}</div>
                         <div className="flex gap-4">
@@ -202,7 +201,7 @@ function ProcessBayar({ form }: { form: TFormGame }) {
         <div className="max-w-md mx-auto bg-white flex justify-between border p-4 rounded-lg">
             <div>
                 <div className="text-gray-800">Total Harga</div>
-                <b className="text-xl">{formatCurrency(form.product?.price.toString() || "0")}</b>
+                <b className="text-xl">{formatCurrency(form.product?.price?.toString() || "0")}</b>
             </div>
             <div>
                 <Drawer>
