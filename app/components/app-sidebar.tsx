@@ -18,7 +18,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Button } from "./ui/button"
 import { Link, useLocation, useNavigation } from "@remix-run/react"
 
-// This is sample data.
 const data = {
   navMain: [
     {
@@ -30,32 +29,14 @@ const data = {
       url: "/dashboard/user",
     },
     {
-      title: "Product2",
-      url: "/dashboard/product2",
+      title: "Product",
+      url: "/dashboard/product",
     },
     {
       title: "Ledger",
       url: "/dashboard/ledger",
     },
-    // {
-    //   title: "Product",
-    //   url: "/dashboard/product",
-    // },
-    // {
-    //   title: "Transaction",
-    //   url: "/dashboard/transaction",
-    // },
-    {
-      title: "Master Data",
-      url: "#",
-      items: [
-        {
-          title: "Tags",
-          url: "/dashboard/master/tags",
-          isActive: false
-        },
-      ],
-    },
+   
     {
       title: "Digiflazz",
       url: "#",

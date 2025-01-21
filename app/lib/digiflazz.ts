@@ -73,12 +73,12 @@ export class Digiflazz {
 
     async processTransactionPulsa({
         sku,
-        phone_number,
+        customer_no,
         webhook_url,
         isProd=false,
     }:{
         sku:string;
-        phone_number: string;
+        customer_no: string;
         webhook_url: string;
         isProd: boolean
     }){
@@ -86,7 +86,7 @@ export class Digiflazz {
         let payload: TRequestTransaction = {
             username: this.username,
             buyer_sku_code: sku,
-            customer_no: phone_number,
+            customer_no: customer_no,
             ref_id,
             sign: this.getSign(ref_id),
             cb_url: webhook_url

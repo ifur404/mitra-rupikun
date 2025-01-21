@@ -18,17 +18,6 @@ export async function action(req: ActionFunctionArgs) {
     }
 }
 
-// export async function loader(req: LoaderFunctionArgs) {
-//     const user = await onlyStaff(req)
-//     const {KV} = req.context.cloudflare.env
-
-//     return {
-//         keys: [
-//             k
-//         ]
-//     }
-// }
-
 export default function dashboarddigiflazzcache() {
     const fetcher = useFetcher<typeof action>()
 

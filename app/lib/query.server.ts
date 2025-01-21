@@ -1,6 +1,6 @@
 import { SQL, sql } from "drizzle-orm";
 
-export function sqlPagination(url: URL, defaultSort='id desc'): {
+export function sqlFilterBackend(url: URL, defaultSort='id desc'): {
     page: number; limit: number;
     offset: number; search?: string | null
     ordering: SQL<any>;

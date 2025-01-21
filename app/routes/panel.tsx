@@ -1,6 +1,6 @@
 import { LoaderFunctionArgs, MetaFunction } from "@remix-run/cloudflare";
 import { allowAny } from "~/lib/auth.server";
-import { Link, Outlet, useLoaderData } from "@remix-run/react";
+import { Outlet, useLoaderData } from "@remix-run/react";
 
 export async function loader(req: LoaderFunctionArgs) {
   const user = allowAny(req)

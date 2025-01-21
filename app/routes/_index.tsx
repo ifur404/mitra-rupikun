@@ -5,9 +5,9 @@ import { DataTable } from "~/components/datatable";
 import { formatCurrency } from "~/components/InputCurrency";
 import { Button } from "~/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { getPricelist } from "./panel.pulsa";
 import { TPriceList } from "~/lib/digiflazz";
 import sessionCookie, { TAuth } from "~/lib/auth.server";
+import { getListDB } from "~/lib/ledger.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -21,7 +21,7 @@ export async function loader(req: LoaderFunctionArgs) {
   const user: TAuth | undefined = await session.parse(req.request.headers.get("Cookie"))
   if(user && user?.is_staff) throw redirect('/dashboard')
   if(user && user?.id) throw redirect('/panel')
-  const product = await getPricelist(req.context.cloudflare.env)
+  const product = await getListDB(req.context.cloudflare.env)
   return product
 }
 
@@ -29,7 +29,7 @@ export async function loader(req: LoaderFunctionArgs) {
 const collums: ColumnDef<TPriceList>[] = [
   {
     id: "id",
-    accessorKey: 'buyer_sku_code',
+    accessorKey: 'code',
     header: "ID"
   },
   {

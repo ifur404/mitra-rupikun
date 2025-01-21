@@ -19,14 +19,14 @@ import { db } from "~/drizzle/client.server"
 import { ledgerTable, userTable } from "~/drizzle/schema"
 import useUserBalance from "~/hooks/use-user-balance"
 import { onlyStaff } from "~/lib/auth.server"
-import { sqlPagination } from "~/lib/query.server"
+import { sqlFilterBackend } from "~/lib/query.server"
 import { dateFormat } from "~/lib/time"
 
 export async function loader(req: LoaderFunctionArgs) {
   const user = await onlyStaff(req)
   const url = new URL(req.request.url)
   const mydb = db(req.context.cloudflare.env.DB)
-  const filter = sqlPagination(url, 'name')
+  const filter = sqlFilterBackend(url, 'name')
   const search = url.searchParams
   const mytable = userTable
   const searchableFields = [mytable.name, mytable.phone_number, mytable.email, mytable.groups]
@@ -73,24 +73,23 @@ export async function action(req: ActionFunctionArgs) {
     const user_id = Number(formData.get("user_id"))
     const append_balance = convertCurrencyToDecimal(formData.get("amount")?.toString() || '0')
     const before = await mydb.query.ledgerTable.findFirst({
-      where: and(eq(ledgerTable.key, user_id)),
+      where: and(eq(ledgerTable.key, user_id.toString())),
       orderBy: desc(ledgerTable.created_at)
     })
-    const before_balance = before?.id ? Number(before.before) : 0
+    const before_balance = before?.id ? Number(before.after) : 0
 
     const topup: TFormTopUp = {
       note: formData.get("note")?.toString() || ""
     }
 
     await mydb.insert(ledgerTable).values({
-      key: user_id,
-      type: LedgerTypeEnum.TOPUP,
+      key: user_id.toString(),
       before: before_balance,
       mutation: append_balance,
       after: before_balance + append_balance,
-      data: JSON.stringify({
-        topup: topup
-      }),
+      data: {
+        topup: topup,
+      },
       created_at: new Date().getTime(),
       created_by: user.id
     })
@@ -179,7 +178,6 @@ export function ShowIsBoolean({ num }: { num: number }) {
 }
 
 function ShowSaldo({ data }: { data: TData }) {
-  const { revalidate } = useRevalidator();
 
   const b = useUserBalance(data.id)
   const [show, setShow] = useState(false)
@@ -193,9 +191,9 @@ function ShowSaldo({ data }: { data: TData }) {
   useEffect(() => {
     if (fetcher.state === "idle") {
       if (fetcher.data?.success) {
+        b.getSaldo()
         toast.error("Berhasil top up ")
         toggleShow()
-        revalidate()
       }
       if (fetcher.data?.error) {
         toast.error("Failed")

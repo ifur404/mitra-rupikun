@@ -81,17 +81,10 @@ export async function action(req: ActionFunctionArgs) {
             where: eq(ledgerTable.uuid, data.ref_id)
         })
 
-        let last_data = {}
-        try {
-            last_data = JSON.parse(ledger?.data || "{}") as any
-        } catch (error) {
-            
-        }
-
         await mydb.update(ledgerTable).set({
-            data: JSON.stringify({
-                ...last_data,
-                done: webhookPayload.formdata,
+            data: {
+                ...ledger?.data,
+                webhook: webhookPayload.formdata,
                 webhook_detail: {
                     headers: webhookPayload.headers,
                     timestamp: webhookPayload.timestamp,
@@ -99,7 +92,7 @@ export async function action(req: ActionFunctionArgs) {
                     signature,
                     isValid
                 }
-            })
+            }
         }).where(eq(ledgerTable.uuid, data.ref_id))
 
         await req.context.cloudflare.env.KV.put(CACHE_KEYS.SALDO_GLOBAL, data.buyer_last_saldo.toString(), {
@@ -107,11 +100,6 @@ export async function action(req: ActionFunctionArgs) {
         })
 
         await sendIpurNotification(`Webhook \n${JSON.stringify(webhookPayload.formdata, null, "\t")}`, req.context.cloudflare.env.TELEGRAM_TOKEN)
-        // if(webhookPayload.formdata.status === "Sukses"){
-        //     await mydb.insert(ledgerTable).values({
-
-        //     })
-        // }
         emitter.emit("/");
         emitter.emit(`/panel/transaksi/${data.ref_id}`);
     }

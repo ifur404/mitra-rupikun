@@ -1,20 +1,19 @@
-import { json, LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { and, desc, eq, or } from "drizzle-orm";
+import { LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "~/drizzle/client.server";
 import { ledgerTable } from "~/drizzle/schema";
 import { onlyStaff } from "~/lib/auth.server";
-import { sqlPagination } from "~/lib/query.server";
+import { sqlFilterBackend } from "~/lib/query.server";
 
 export async function loader(req: LoaderFunctionArgs) {
     const user = await onlyStaff(req)
     const mydb = db(req.context.cloudflare.env.DB)
     const url = new URL(req.request.url)
-    const filter = sqlPagination(url)
+    const filter = sqlFilterBackend(url)
     
-    const {key, type} = Object.fromEntries(url.searchParams)
+    const {key} = Object.fromEntries(url.searchParams)
     const where = and(
-        eq(ledgerTable.key, Number(key)).if(key),
-        eq(ledgerTable.type, String(type)).if(type),
+        eq(ledgerTable.key, key).if(key),
     )
     
     const data = await mydb.query.ledgerTable.findFirst({
@@ -22,5 +21,5 @@ export async function loader(req: LoaderFunctionArgs) {
         orderBy: desc(ledgerTable.created_at)
     })
     const saldo = data?.after || 0
-    return json({saldo: saldo})
+    return Response.json({saldo: saldo})
 }

@@ -32,7 +32,7 @@ export async function loader(req: LoaderFunctionArgs) {
     return {
         uuid: uuid || '',
         user,
-        transaction: { ...transaction, data: JSON.parse(transaction.data || '') as TDataLedger }
+        transaction
     }
 }
 
@@ -49,12 +49,15 @@ export async function action(req: ActionFunctionArgs) {
     });
 
     const formData = await req.request.formData()
-    const complain_text = JSON.stringify({...JSON.parse(transaction?.data || "{}"), complain: formData.get('complain') || ''}, null, "\t")
+    const datanya = {
+        ...transaction?.data,
+        complain: formData.get('complain')?.toString() || ''
+    }
     await mydb.update(ledgerTable).set({
-        data: complain_text
+        data: datanya
     }).where(eq(ledgerTable.id, transaction.id))
 
-    await sendIpurNotification(`Complain \n${complain_text}`, req.context.cloudflare.env.TELEGRAM_TOKEN)
+    await sendIpurNotification(`Complain \n${datanya}`, req.context.cloudflare.env.TELEGRAM_TOKEN)
     return {
         success: true
     }
@@ -73,8 +76,8 @@ export default function PanelLegdger() {
         <div className="space-y-4">
             <HeaderBack title={`Transaksi ${loaderData.uuid}`} back_to="/panel/transaksi" />
 
-            {(loaderData.transaction.type === LedgerTypeEnum.TOPUP) && <RenderTopUp data={loaderData.transaction.data} />}
-            {(loaderData.transaction.type === LedgerTypeEnum.PURCHASE_PULSA || loaderData.transaction.type === LedgerTypeEnum.PURCHASE) && <RenderPulsa data={loaderData.transaction.data} />}
+           <RenderTopUp data={loaderData.transaction.data} />
+           <RenderPulsa data={loaderData.transaction.data} />
 
             <fetcher.Form method="POST" className="p-4 rounded-lg border space-y-2">
                 <Label htmlFor="Komplen">Ajukan Keluhan :</Label>
@@ -88,20 +91,25 @@ export default function PanelLegdger() {
     )
 }
 
-function RenderTopUp({ data }: { data: TDataLedger }) {
-    return <div className="p-4 rounded-lg border">
-        {Object.entries(data?.topup || {}).map(([key, value]) => (
-            <div key={key} className="flex justify-between border-b border-gray-200 py-2">
-                <span className="text-gray-600">{key.split("_").join(" ")}</span>
-                <span className="text-gray-900 font-medium">
-                    {formatValue(key, value)}
-                </span>
-            </div>
-        ))}
-    </div>
+function RenderTopUp({ data }: { data: TDataLedger | null }) {
+    if(data?.topup){
+        return <div className="p-4 rounded-lg border">
+            {Object.entries(data?.topup || {}).map(([key, value]) => (
+                <div key={key} className="flex justify-between border-b border-gray-200 py-2">
+                    <span className="text-gray-600">{key.split("_").join(" ")}</span>
+                    <span className="text-gray-900 font-medium">
+                        {formatValue(key, value)}
+                    </span>
+                </div>
+            ))}
+        </div>
+    }
+    return null
 }
 
-function RenderPulsa({ data }: { data: TDataLedger }) {
+function RenderPulsa({ data }: { data: TDataLedger | null }) {
+    if(!data) return 
+    if(!data.topup) return
     if (data.response?.status === "Gagal" && !("done" in data)) {
         return <div className="p-4 rounded-lg border">
             {Object.entries(pickKeys(data.response, ['customer_no', 'buyer_sku_code', 'message', 'status', 'price'])).map(([key, value]) => (
@@ -115,7 +123,7 @@ function RenderPulsa({ data }: { data: TDataLedger }) {
         </div>
     }
 
-    if (data.response?.status === "Pending" && !data.done) {
+    if (data.response?.status === "Pending" && !data.webhook) {
         return <>
             <div className="flex items-end justify-center h-20 mt-2">
                 <div className="flex justify-center gap-2 items-center flex-col">
@@ -137,11 +145,11 @@ function RenderPulsa({ data }: { data: TDataLedger }) {
         </>
     }
 
-    if (data?.done) {
+    if (data?.webhook) {
         return <>
             <div className="flex items-end justify-center h-20 mt-2">
                 <div className="flex justify-center gap-2 items-center flex-col">
-                    {data.done?.status === "Sukses" ?
+                    {data.webhook?.status === "Sukses" ?
                         <Check size={50} className="animate-bounce " />
                         :
                         <XCircle size={50} className="animate-bounce " />
@@ -150,7 +158,7 @@ function RenderPulsa({ data }: { data: TDataLedger }) {
             </div>
 
             <div className="p-4 rounded-lg border">
-                {Object.entries(pickKeys(data.done, ['customer_no', 'buyer_sku_code', 'message', 'sn', 'price'])).map(([key, value]) => (
+                {Object.entries(pickKeys(data.webhook, ['customer_no', 'buyer_sku_code', 'message', 'sn', 'price'])).map(([key, value]) => (
                     <div key={key} className="flex justify-between border-b border-gray-200 py-2">
                         <span className="text-gray-600">{key.split("_").join(" ")}</span>
                         <span className="text-gray-900 font-medium">

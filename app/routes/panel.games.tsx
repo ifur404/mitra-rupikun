@@ -19,14 +19,13 @@ import { desc, eq } from "drizzle-orm";
 import { ledgerTable } from "~/drizzle/schema";
 import { LedgerTypeEnum } from "~/data/enum";
 import { toast } from "sonner";
+import { getListDB } from "~/lib/ledger.server";
 
 
 export async function loader(req: LoaderFunctionArgs) {
     const _ = await allowAny(req)
-    // await req.context.cloudflare.env.KV.delete(CACHE_KEYS.GAMES)
-    const product = await getPricelist(req.context.cloudflare.env, "Games", CACHE_KEYS.GAMES)
-
-    const brand = [...new Set(product.map(e => e.brand))].sort((a, b) => a.localeCompare(b))
+    const product = await getListDB(req.context.cloudflare.env, "Games")
+    const brand = [...new Set(product.map(e => e.data?.brand as string))].sort((a, b) => a.localeCompare(b))
 
     return {
         data: product,
@@ -40,20 +39,20 @@ export async function action(req: ActionFunctionArgs) {
     const { DIGI_USERNAME, DIGI_APIKEY, WEBHOOK_URL, NODE_ENV } = req.context.cloudflare.env
     const formData = await req.request.formData()
     const form = JSON.parse(formData.get("json")?.toString() || '') as TFormGame
-    const product = await getPricelist(req.context.cloudflare.env, 'Games', CACHE_KEYS.GAMES)
-    const paket = product.find(e => e.buyer_sku_code === form.product?.buyer_sku_code)
-    if (!paket) throw new Error("Error")
+    const products = await getListDB(req.context.cloudflare.env, 'Games')
+    const product = products.find(e => e.code === form.product?.buyer_sku_code)
+    if (!product) throw new Error("Error")
     const mydb = db(req.context.cloudflare.env.DB)
     const saldo = await mydb.query.ledgerTable.findFirst({
-        where: eq(ledgerTable.key, user.id),
+        where: eq(ledgerTable.key, user.id.toString()),
         orderBy: desc(ledgerTable.created_at)
     })
     if (saldo) {
-        if (saldo.after > paket.price) {
+        if (saldo.after > (product.price || 0)) {
             const digiflazz = new Digiflazz(DIGI_USERNAME, DIGI_APIKEY)
             const response = await digiflazz.processTransactionPulsa({
-                sku: paket.buyer_sku_code,
-                phone_number: form.game_id,
+                sku: product.code,
+                customer_no: form.game_id,
                 webhook_url: WEBHOOK_URL,
                 isProd: NODE_ENV === "production",
             })
@@ -61,16 +60,15 @@ export async function action(req: ActionFunctionArgs) {
             const transaction = await mydb.insert(ledgerTable).values({
                 uuid: response.ref_id,
                 before: saldo.after,
-                mutation: paket.price,
-                after: saldo.after - paket.price,
-                key: user.id,
-                type: LedgerTypeEnum.PURCHASE_GAME,
+                mutation: product.price,
+                after: (saldo.after - (product.price || 0)),
+                key: user.id.toString(),
                 created_by: user.id,
                 created_at: new Date().getTime(),
-                data: JSON.stringify({
-                    form,
+                data: {
+                    games: form,
                     response: response,
-                }),
+                },
             }).returning({ uuid: ledgerTable.uuid })
 
             throw redirect(`/panel/transaksi/${transaction[0].uuid}`)
@@ -152,23 +150,23 @@ export default function panelgame() {
             </div>
 
             <div className="space-y-4">
-                {loaderData.data.filter(e => e.brand === form.brand).map((e) => {
+                {loaderData.data.filter(e => e.data?.brand === form.brand).map((e) => {
                     return <div
-                        key={e.buyer_sku_code}
+                        key={e.code}
                         onClick={() => {
-                            setForm(cur => ({ ...cur, product: e }))
+                            setForm(cur => ({ ...cur, product: e.data }))
                         }}
-                        className={cn("p-4 rounded-lg cursor-pointer border-2", form.product?.buyer_sku_code === e.buyer_sku_code ? "border-blue-500" : "")}
+                        className={cn("p-4 rounded-lg cursor-pointer border-2", form.product?.buyer_sku_code === e.code ? "border-blue-500" : "")}
                     >
-                        <div>{e.product_name} - {e.seller_name}</div>
+                        <div>{e.name}</div>
                         <div className="flex gap-4">
-                            <div className="font-extrabold">{formatCurrency(e?.price.toString())}</div>
+                            <div className="font-extrabold">{formatCurrency(e?.price?.toString() || '0')}</div>
                         </div>
                     </div>
                 })}
             </div>
 
-            <ProcessBayar form={form}/>
+            <ProcessBayar form={form} />
 
         </div>
     )
@@ -209,7 +207,7 @@ function ProcessBayar({ form }: { form: TFormGame }) {
             <div>
                 <Drawer>
                     <DrawerTrigger asChild disabled={!form.product}>
-                        <Button  disabled={!form.product}>Proses Bayar</Button>
+                        <Button disabled={!form.product}>Proses Bayar</Button>
                     </DrawerTrigger>
                     <DrawerContent>
                         <DrawerHeader>

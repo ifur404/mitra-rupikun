@@ -9,7 +9,7 @@ import { PaginationPage } from "~/components/pagination-page";
 import { db } from "~/drizzle/client.server";
 import { ledgerTable } from "~/drizzle/schema";
 import { onlyStaff } from "~/lib/auth.server";
-import { sqlPagination } from "~/lib/query.server";
+import { sqlFilterBackend } from "~/lib/query.server";
 import { dateFormat } from "~/lib/time";
 import OpenDetail from "~/components/OpenDetail";
 
@@ -17,7 +17,7 @@ export async function loader(req: LoaderFunctionArgs) {
     const user = await onlyStaff(req)
     const url = new URL(req.request.url)
     const mydb = db(req.context.cloudflare.env.DB)
-    const filter = sqlPagination(url, 'created_at desc')
+    const filter = sqlFilterBackend(url, 'created_at desc')
     const search = url.searchParams
     const mytable = ledgerTable
     const allColumns = getTableColumns(mytable)
@@ -94,7 +94,7 @@ const collums: ColumnDef<TData>[] = [
         header: "after"
     },
     {
-        cell: (d) => <OpenDetail str={d.row.original.data || ''} view="textarea" />,
+        cell: (d) => <OpenDetail str={JSON.stringify(d.row.original.data)} view="textarea" />,
         header: "Data"
     },
     {

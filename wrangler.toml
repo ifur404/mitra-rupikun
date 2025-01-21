@@ -29,7 +29,7 @@ pages_build_output_dir = "./build/client"
 [[d1_databases]]
 binding = "DB"
 database_name = "mitra"
-database_id = "9eded703-490c-4c33-b680-893f77ede2d1"
+database_id = "a8e03415-7c07-443a-a75d-3c6986cd8feb"
 migrations_dir = "./app/drizzle/migrations"
 
 

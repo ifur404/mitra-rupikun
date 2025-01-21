@@ -24,7 +24,7 @@ export async function loader(req: LoaderFunctionArgs) {
   const user = await allowAny(req)
   const mydb = db(req.context.cloudflare.env.DB)
   const ledger = await mydb.query.ledgerTable.findFirst({
-    where: eq(ledgerTable.key, user.id),
+    where: eq(ledgerTable.key, user.id.toString()),
     orderBy: desc(ledgerTable.created_at)
   })
 

@@ -9,14 +9,14 @@ import { PaginationPage } from "~/components/pagination-page"
 import { db } from "~/drizzle/client.server"
 import { webhookTable } from "~/drizzle/schema"
 import { onlyStaff } from "~/lib/auth.server"
-import { sqlPagination } from "~/lib/query.server"
+import { sqlFilterBackend } from "~/lib/query.server"
 import { dateFormat } from "~/lib/time"
 
 export async function loader(req: LoaderFunctionArgs) {
     const user = await onlyStaff(req)
     const url = new URL(req.request.url)
     const mydb = db(req.context.cloudflare.env.DB)
-    const filter = sqlPagination(url)
+    const filter = sqlFilterBackend(url)
     const search = url.searchParams
     const mytable = webhookTable
     const searchableFields = [mytable.id]
@@ -57,7 +57,7 @@ const collums: ColumnDef<TData>[] = [
         header: "ID"
     },
     {
-        cell: (d) => <OpenDetail str={d.row.original.data || ''} view="textarea" />,
+        cell: (d) => <OpenDetail str={JSON.stringify(d.row.original.data)} view="textarea" />,
         header: "Data"
     },
     {

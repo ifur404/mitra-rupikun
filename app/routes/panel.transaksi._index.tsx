@@ -1,40 +1,41 @@
 import { LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { and, desc, eq, getTableColumns, like, or, sql } from "drizzle-orm";
+import { and, eq, getTableColumns, like, or, sql } from "drizzle-orm";
 import { db } from "~/drizzle/client.server";
 import { ledgerTable } from "~/drizzle/schema";
 import { allowAny } from "~/lib/auth.server";
-import { sqlPagination } from "~/lib/query.server";
+import { sqlFilterBackend } from "~/lib/query.server";
 import { BottonNav, HeaderBack } from "./panel._index";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
-import { TFormPulsa } from "./panel.pulsa";
-import { TResponseTransaction, TWebhookData } from "~/lib/digiflazz";
-import { TFormTopUp } from "./dashboard.user";
-import { LedgerTypeEnum } from "~/data/enum";
 import { formatCurrency } from "~/components/InputCurrency";
 import { PaginationPage } from "~/components/pagination-page";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Search } from "lucide-react";
 import { TFormGame } from "./panel.games";
+import { TFormPulsa } from "./panel.pulsa";
+import { TFormTopUp } from "./dashboard.user";
+import { TResponseTransaction, TWebhookData } from "~/lib/digiflazz";
 
 export type TDataLedger = {
-  form: TFormPulsa | TFormGame | TFormTopUp;
-  response?: TResponseTransaction;
-  done?: TWebhookData;
+  games?: TFormGame;
+  pulsa?: TFormPulsa;
   topup?: TFormTopUp;
-  complain?: string
+  response?: TResponseTransaction;
+  webhook?: TWebhookData;
+  webhook_detail?: any;
+  complain?: string;
 }
 
 export async function loader(req: LoaderFunctionArgs) {
   const user = await allowAny(req)
   const mydb = db(req.context.cloudflare.env.DB)
   const url = new URL(req.request.url)
-  const filter = sqlPagination(url, 'created_at desc')
+  const filter = sqlFilterBackend(url, 'created_at desc')
   const searchableFields = [ledgerTable.key, ledgerTable.id, ledgerTable.data]
 
   const { key, type } = Object.fromEntries(url.searchParams)
   const where = and(
-    eq(ledgerTable.key, user.id),
+    eq(ledgerTable.key, user.id.toString()),
     and(
       or(...searchableFields.map((c) => like(c, `%${filter.search}%`)))?.if(filter.search)
     )
@@ -52,10 +53,7 @@ export async function loader(req: LoaderFunctionArgs) {
     .orderBy(filter.ordering)
 
   return {
-    data: data.map(e => {
-      const d = JSON.parse(e.data || '') as TDataLedger
-      return { ...e, data: d }
-    }),
+    data: data,
     page: {
       limit: filter.limit,
       offset: filter.offset,
@@ -87,31 +85,20 @@ export default function paneltransaksi() {
       </form>
       <div className="flex flex-col gap-4">
         {loaderData.data.map((e, i) => {
-          if (!e.uuid) return null
-          if ([LedgerTypeEnum.TOPUP, LedgerTypeEnum.BALANCE_USER].includes(e.type)) {
+          if(e.data?.topup){
             return <Link to={`/panel/transaksi/${e.uuid}`} key={e.uuid} className="p-4 rounded-lg border">
-              <div>Perubahan Saldo</div>
+              <div>Top up </div>
               <b>{formatCurrency(e.mutation?.toString() || '')}</b>
-              <div className="text-xs mt-2">{e.data?.topup?.note || ''}</div>
+              <div className="text-xs mt-2">{e.data.topup.note}</div>
             </Link>
           }
 
-          if (LedgerTypeEnum.PURCHASE_GAME === e.type) {
-            const status = e.data?.done ? e.data.done.status : e.data.response?.status
-            const form = e.data.form as TFormGame
-            return <Link to={`/panel/transaksi/${e.uuid}`} key={e.uuid} className="p-4 rounded-lg border">
-              <div>Pembelian - {form.product?.product_name}</div>
-              <b>{formatCurrency(e.mutation?.toString() || '')}</b>
-              <div className="text-xs">{form.game_id} - {status}</div>
-            </Link>
-          }
-
-          const form = e.data.form as TFormPulsa
-          const status = e.data?.done ? e.data.done.status : e.data.response?.status
+          const title = e.data?.pulsa?.product?.product_name || e.data?.games?.product?.product_name
+          const status = e.data?.webhook?.status || e.data?.response?.status
           return <Link to={`/panel/transaksi/${e.uuid}`} key={e.uuid} className="p-4 rounded-lg border">
-            <div>Pembelian - {form.paket?.product_name}</div>
+            <div>{title}</div>
             <b>{formatCurrency(e.mutation?.toString() || '')}</b>
-            <div className="text-xs">{form.phone_number} - {status}</div>
+            <div className="text-xs mt-2">{status}</div>
           </Link>
         })}
       </div>

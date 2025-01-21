@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1737029005597,
-      "tag": "0000_early_kree",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1737195130686,
-      "tag": "0001_thin_william_stryker",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1737203164562,
-      "tag": "0002_exotic_whizzer",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1737203378116,
-      "tag": "0003_spicy_wallflower",
+      "when": 1737372926355,
+      "tag": "0000_medical_deathstrike",
       "breakpoints": true
     }
   ]

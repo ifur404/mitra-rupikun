@@ -17,6 +17,7 @@ import { ledgerTable } from "~/drizzle/schema";
 import { LedgerTypeEnum } from "~/data/enum";
 import { toast } from "sonner";
 import { CACHE_KEYS } from "~/data/cache";
+import { getListDB } from "~/lib/ledger.server";
 
 const optionMobileOperators = [
     { label: "Telkomsel", value: "telkomsel", pattern: /^(0)?(811|812|813|821|822|823|852|853)\d{5,9}$/ },
@@ -31,9 +32,9 @@ const optionMobileOperators = [
 function identifyOperator(phoneNumber: string) {
     const cleaned = phoneNumber.replace(/\D/g, '');
 
-    for (const operator of optionMobileOperators) {
-        if (operator.pattern.test(cleaned)) {
-            return operator;
+    for (const brand of optionMobileOperators) {
+        if (brand.pattern.test(cleaned)) {
+            return brand;
         }
     }
     return null;
@@ -62,9 +63,10 @@ export async function getPricelist(env: Env, category: DigiCategory = "Pulsa", c
 }
 
 
+
 export async function loader(req: LoaderFunctionArgs) {
     const _ = await allowAny(req)
-    const product = await getPricelist(req.context.cloudflare.env)
+    const product = await getListDB(req.context.cloudflare.env, "Pulsa")
     return {
         data: product
     }
@@ -75,20 +77,20 @@ export async function action(req: ActionFunctionArgs) {
     const { DIGI_USERNAME, DIGI_APIKEY, WEBHOOK_URL, NODE_ENV } = req.context.cloudflare.env
     const formData = await req.request.formData()
     const form = JSON.parse(formData.get("json")?.toString() || '') as TFormPulsa
-    const product = await getPricelist(req.context.cloudflare.env)
-    const paket = product.find(e => e.buyer_sku_code === form.paket?.buyer_sku_code)
-    if (!paket) throw new Error("Error")
+    const products = await getListDB(req.context.cloudflare.env, "Pulsa")
+    const product = products.find(e => e.data?.buyer_sku_code === form.product?.buyer_sku_code)
+    if (!product) throw new Error("Error")
     const mydb = db(req.context.cloudflare.env.DB)
     const saldo = await mydb.query.ledgerTable.findFirst({
-        where: eq(ledgerTable.key, user.id),
+        where: eq(ledgerTable.key, user.id.toString()),
         orderBy: desc(ledgerTable.created_at)
     })
     if (saldo) {
-        if (saldo.after > paket.price) {
+        if (saldo.after > (product.price || 0)) {
             const digiflazz = new Digiflazz(DIGI_USERNAME, DIGI_APIKEY)
             const response = await digiflazz.processTransactionPulsa({
-                sku: paket.buyer_sku_code,
-                phone_number: form.phone_number,
+                sku: product.code,
+                customer_no: form.customer_no,
                 webhook_url: WEBHOOK_URL,
                 isProd: NODE_ENV === "production",
             })
@@ -96,16 +98,15 @@ export async function action(req: ActionFunctionArgs) {
             const transaction = await mydb.insert(ledgerTable).values({
                 uuid: response.ref_id,
                 before: saldo.after,
-                mutation: paket.price,
-                after: saldo.after - paket.price,
-                key: user.id,
-                type: LedgerTypeEnum.PURCHASE_PULSA,
+                mutation: product.price,
+                after: saldo.after - (product?.price || 0),
+                key: user.id.toString(),
                 created_by: user.id,
                 created_at: new Date().getTime(),
-                data: JSON.stringify({
-                    form,
-                    response: response,
-                }),
+                data: {
+                    pulsa: form,
+                    response,
+                },
             }).returning({ uuid: ledgerTable.uuid })
 
             throw redirect(`/panel/transaksi/${transaction[0].uuid}`)
@@ -117,42 +118,42 @@ export async function action(req: ActionFunctionArgs) {
 }
 
 export type TFormPulsa = {
-    phone_number: string;
-    operator: typeof optionMobileOperators[0] | null;
-    paket: TPriceList | null
+    customer_no: string;
+    brand: typeof optionMobileOperators[0] | null;
+    product: TPriceList | null
 }
 export default function PanelPulsa() {
     const loaderData = useLoaderData<typeof loader>()
     const [form, setForm] = useState<TFormPulsa>({
-        phone_number: "",
-        operator: null,
-        paket: null
+        customer_no: "",
+        brand: null,
+        product: null
     })
 
     useEffect(() => {
-        if (!(form.phone_number.length > 4)) return
-        const identifikasi = identifyOperator(form.phone_number)
+        if (!(form.customer_no.length > 4)) return
+        const identifikasi = identifyOperator(form.customer_no)
         if (identifikasi) {
-            setForm(cur => ({ ...cur, operator: identifikasi }))
+            setForm(cur => ({ ...cur, brand: identifikasi }))
         }
-    }, [form.phone_number])
+    }, [form.customer_no])
 
     return <div className="space-y-4 text-sm">
         <HeaderBack title="Pulsa" />
 
         <div className="space-y-2 p-4 rounded-lg border">
             <div>
-                <Label htmlFor="phone_number">No tujuan : </Label>
+                <Label htmlFor="customer_no">No tujuan : </Label>
                 <div className="flex gap-2 items-center">
-                    <Input name="phone_number" value={form.phone_number} onChange={(e) => {
-                        setForm(cur => ({ ...cur, phone_number: e.target.value }))
+                    <Input name="customer_no" value={form.customer_no} onChange={(e) => {
+                        setForm(cur => ({ ...cur, customer_no: e.target.value }))
                     }} placeholder="contoh: 082122012952" />
                 </div>
             </div>
             <div>
-                <Label htmlFor="operator">Operator : </Label>
-                <Select name="operator" value={form.operator?.value} onValueChange={(v) => {
-                    setForm(cur => ({ ...cur, operator: optionMobileOperators.find(e => e.value === v) || null }))
+                <Label htmlFor="brand">Operator : </Label>
+                <Select name="brand" value={form.brand?.value} onValueChange={(v) => {
+                    setForm(cur => ({ ...cur, brand: optionMobileOperators.find(e => e.value === v) || null }))
                 }}>
                     <SelectTrigger>
                         <SelectValue placeholder="Pilih Operator" />
@@ -167,17 +168,17 @@ export default function PanelPulsa() {
         </div>
 
         <div className="space-y-4">
-            {loaderData.data.filter(e => e.brand.toLowerCase() === form.operator?.value.toLowerCase()).map((e) => {
+            {loaderData.data.filter(e => e.data?.brand.toLowerCase() === form.brand?.value.toLowerCase()).map((e) => {
                 return <div
-                    key={e.buyer_sku_code}
+                    key={e.code}
                     onClick={() => {
-                        setForm(cur => ({ ...cur, paket: e }))
+                        setForm(cur => ({ ...cur, product: e.data }))
                     }}
-                    className={cn("p-4 rounded-lg cursor-pointer border-2", form.paket?.buyer_sku_code === e.buyer_sku_code ? "border-blue-500" : "")}
+                    className={cn("p-4 rounded-lg cursor-pointer border-2", form.product?.buyer_sku_code === e.data?.buyer_sku_code ? "border-blue-500" : "")}
                 >
-                    <div>{e.product_name} - {e.seller_name}</div>
+                    <div>{e.name}</div>
                     <div className="flex gap-4">
-                        <div className="font-extrabold">{formatCurrency(e?.price.toString())}</div>
+                        <div className="font-extrabold">{formatCurrency(e?.price?.toString() || '')}</div>
                     </div>
                 </div>
             })}
@@ -218,7 +219,7 @@ function ProcessBayar({ form }: { form: TFormPulsa }) {
         <div className="max-w-md mx-auto bg-white flex justify-between border p-4 rounded-lg">
             <div>
                 <div className="text-gray-800">Total Harga</div>
-                <b className="text-xl">{formatCurrency(form.paket?.price.toString() || "0")}</b>
+                <b className="text-xl">{formatCurrency(form.product?.price.toString() || "0")}</b>
             </div>
             <div>
                 <Drawer>
@@ -231,7 +232,7 @@ function ProcessBayar({ form }: { form: TFormPulsa }) {
                             <DrawerDescription>Pembelian tidak dapat dibatalkan</DrawerDescription>
                         </DrawerHeader>
                         <div className="p-4">
-                            {Object.entries(pickKeys(form.paket || {}, selectedKeys)).map(([key, value]) => (
+                            {Object.entries(pickKeys(form.product || {}, selectedKeys)).map(([key, value]) => (
                                 <div key={key} className="flex justify-between border-b border-gray-200 py-2">
                                     <span className="text-gray-600">{key.split("_").join(" ")}</span>
                                     <span className="text-gray-900 font-medium">
