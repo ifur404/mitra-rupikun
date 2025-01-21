@@ -129,7 +129,7 @@ export async function action(req: ActionFunctionArgs) {
             const list_product = product.map(e => ({
                 code: e.buyer_sku_code,
                 name: e.product_name,
-                price: category === "Pulsa" ? generatePrice(e.product_name, 3000) : e.price,
+                price: category === "Pulsa" ? generatePricePulsa(e.product_name, 3000) : generatePriceGame(e.price || 0, 3000),
                 data: e,
                 category,
                 created_by: user.id,
@@ -160,13 +160,17 @@ export async function action(req: ActionFunctionArgs) {
     return { error: "Failed" }
 }
 
-function generatePrice(input: string, additionalAmount: number): number {
+function generatePricePulsa(input: string, additionalAmount: number): number {
     const split_price = input.split(" ")
     const basePrice = Number(split_price.at(-1)?.replaceAll(".", '')) || 0
     const finalPrice = basePrice + additionalAmount;
     return finalPrice;
 }
 
+function generatePriceGame(input: number, additionalAmount: number = 3000): number {
+    const basePrice = input + additionalAmount;
+    return Math.ceil(basePrice / 500) * 500; // Round up to the nearest 500
+ }
 
 type TData = typeof productTable.$inferSelect
 const collums: ColumnDef<TData>[] = [
@@ -196,8 +200,22 @@ const collums: ColumnDef<TData>[] = [
     },
     {
         id: "price",
+        accessorFn: (d) => formatCurrency(d?.data?.price?.toString() || "0"),
+        header: "Price"
+    },
+    {
+        id: "price_sell",
         accessorFn: (d) => formatCurrency(d?.price?.toString() || "0"),
         header: "Price Sell"
+    },
+    {
+        enableSorting: false,
+        id: "margin",
+        accessorFn: (d) => {
+            const p = (d.price || 0) - (d.data?.price || 0)
+            return formatCurrency(p.toString())
+        },
+        header: "Margin"
     },
     // {
     //     id: "created_at",

@@ -57,7 +57,7 @@ export async function action(req: ActionFunctionArgs) {
         data: datanya
     }).where(eq(ledgerTable.id, transaction.id))
 
-    await sendIpurNotification(`Complain \n${datanya}`, req.context.cloudflare.env.TELEGRAM_TOKEN)
+    await sendIpurNotification(`Complain \n${JSON.stringify(datanya)}`, req.context.cloudflare.env.TELEGRAM_TOKEN)
     return {
         success: true
     }
@@ -108,8 +108,8 @@ function RenderTopUp({ data }: { data: TDataLedger | null }) {
 }
 
 function RenderPulsa({ data }: { data: TDataLedger | null }) {
-    if(!data) return 
-    if(!data.topup) return
+    if(!data) return null
+    if(!Object.keys(data).some(e=> ['pulsa', 'games'].includes(e))) return null
     if (data.response?.status === "Gagal" && !("done" in data)) {
         return <div className="p-4 rounded-lg border">
             {Object.entries(pickKeys(data.response, ['customer_no', 'buyer_sku_code', 'message', 'status', 'price'])).map(([key, value]) => (
@@ -170,5 +170,5 @@ function RenderPulsa({ data }: { data: TDataLedger | null }) {
         </>
     }
 
-    return <div>Belum tersedia, hubungi pihak terkait</div>
+    return null
 }
