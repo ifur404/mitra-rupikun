@@ -94,7 +94,7 @@ export default function PanelPulsa() {
         product: null
     })
     return <div className="space-y-4 text-sm">
-        <HeaderBack title="Pulsa" />
+        <HeaderBack title="E-Money" />
 
         <div className="space-y-2 p-4 rounded-lg border">
             <div>

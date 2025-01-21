@@ -126,15 +126,24 @@ export async function action(req: ActionFunctionArgs) {
             const category = formData.get("category")?.toString() as DigiCategory
             const product = await getPricelist(req.context.cloudflare.env, category, category)
 
-            const list_product = product.map(e => ({
+            const list_product = product.map(e => {
+                let p = e.price;
+                if(category==="Pulsa"){
+                    p = generatePricePulsa(e.product_name, 3000)
+                } else if(category==="Games"){
+                    p = generatePriceGame(e.price || 0, 3000)
+                } else if(category==="E-Money"){
+                    p = generatePriceGame(e.price || 0, 1800)
+                }
+                return {
                 code: e.buyer_sku_code,
                 name: e.product_name,
-                price: category === "Pulsa" ? generatePricePulsa(e.product_name, 3000) : generatePriceGame(e.price || 0, 3000),
+                price: p,
                 data: e,
                 category,
                 created_by: user.id,
                 updated_by: user.id,
-            }))
+            }})
 
             list_product.forEach(async (e, i) => {
                 await mydb
@@ -143,7 +152,8 @@ export async function action(req: ActionFunctionArgs) {
                     .onConflictDoUpdate({
                         target: productTable.code,
                         set: { 
-                            name: e.name, price: e.price,
+                            name: e.name, 
+                            price: e.price,
                             category,
                             data: e.data, 
                             updated_at: new Date().getTime() 

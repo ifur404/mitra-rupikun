@@ -171,4 +171,4 @@ export type TWebhookData = {
   wa: string;
 }
 
-export type DigiCategory = "Pulsa" | "Data" | "Games"
+export type DigiCategory = "Pulsa" | "Games" | "E-Money"

@@ -4,7 +4,7 @@ import { allowAny } from "~/lib/auth.server";
 import { db } from "~/drizzle/client.server";
 import { eq } from "drizzle-orm";
 import { ledgerTable } from "~/drizzle/schema";
-import { TDataLedger } from "./panel.transaksi._index";
+import { LIST_KEYS, TDataLedger } from "./panel.transaksi._index";
 import { formatValue, pickKeys } from "./panel.pulsa";
 import { Textarea } from "~/components/ui/textarea";
 import { Label } from "~/components/ui/label";
@@ -109,7 +109,7 @@ function RenderTopUp({ data }: { data: TDataLedger | null }) {
 
 function RenderDigiFlazz({ data }: { data: TDataLedger | null }) {
     if(!data) return null
-    if(!Object.keys(data).some(e=> ['pulsa', 'games','e-money'].includes(e.toLowerCase()))) return null
+    if(!Object.keys(data).some(e=> LIST_KEYS.includes(e?.toLowerCase() as any))) return null
     if (data.response?.status === "Gagal" && !("done" in data)) {
         return <div className="p-4 rounded-lg border">
             {Object.entries(pickKeys(data.response, ['customer_no', 'buyer_sku_code', 'message', 'status', 'price'])).map(([key, value]) => (
