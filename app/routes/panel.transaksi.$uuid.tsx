@@ -77,7 +77,7 @@ export default function PanelLegdger() {
             <HeaderBack title={`Transaksi ${loaderData.uuid}`} back_to="/panel/transaksi" />
 
            <RenderTopUp data={loaderData.transaction.data} />
-           <RenderPulsa data={loaderData.transaction.data} />
+           <RenderDigiFlazz data={loaderData.transaction.data} />
 
             <fetcher.Form method="POST" className="p-4 rounded-lg border space-y-2">
                 <Label htmlFor="Komplen">Ajukan Keluhan :</Label>
@@ -107,9 +107,9 @@ function RenderTopUp({ data }: { data: TDataLedger | null }) {
     return null
 }
 
-function RenderPulsa({ data }: { data: TDataLedger | null }) {
+function RenderDigiFlazz({ data }: { data: TDataLedger | null }) {
     if(!data) return null
-    if(!Object.keys(data).some(e=> ['pulsa', 'games'].includes(e))) return null
+    if(!Object.keys(data).some(e=> ['pulsa', 'games','e-money'].includes(e.toLowerCase()))) return null
     if (data.response?.status === "Gagal" && !("done" in data)) {
         return <div className="p-4 rounded-lg border">
             {Object.entries(pickKeys(data.response, ['customer_no', 'buyer_sku_code', 'message', 'status', 'price'])).map(([key, value]) => (

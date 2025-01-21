@@ -1,5 +1,5 @@
 import { Link, useLoaderData, useRouteLoaderData } from "@remix-run/react"
-import { ChevronLeft, Gamepad, Smartphone, Wifi, Zap } from 'lucide-react'
+import { ChevronLeft, Gamepad, Smartphone, Wallet, Wifi, Zap } from 'lucide-react'
 import { Home, List, User } from "lucide-react";
 import { LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { allowAny } from "~/lib/auth.server";
@@ -12,7 +12,7 @@ import { Button } from "~/components/ui/button";
 export const OPTION_SERVICES = [
   { icon: Smartphone, label: "Pulsa", badge: "" },
   { icon: Gamepad, label: "Games", badge: "" },
-  // { icon: Zap, label: "PLN", badge: "" },
+  { icon: Wallet, label: "E-Money", badge: "" },
 ]
 const BOTTONNAVIGATION = [
   { icon: Home, label: "Home", url: '/panel' },

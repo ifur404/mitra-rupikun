@@ -15,8 +15,10 @@ import { TFormGame } from "./panel.games";
 import { TFormPulsa } from "./panel.pulsa";
 import { TFormTopUp } from "./dashboard.user";
 import { TResponseTransaction, TWebhookData } from "~/lib/digiflazz";
+import { TFormEmoney } from "./panel.e-money";
 
 export type TDataLedger = {
+  emoney?: TFormEmoney;
   games?: TFormGame;
   pulsa?: TFormPulsa;
   topup?: TFormTopUp;
