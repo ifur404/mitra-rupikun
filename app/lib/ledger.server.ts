@@ -6,7 +6,7 @@ export async function getListDB(env: Env, category?:string){
     const mydb = db(env.DB)
     const result = await mydb.query.productTable.findMany({
         where: eq(productTable.category, category || '').if(category),
-        orderBy: asc(productTable.name),
+        orderBy: asc(productTable.price),
     })
     return result
 }
