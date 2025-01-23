@@ -16,7 +16,7 @@ import { db } from "~/drizzle/client.server";
 import { productTable } from "~/drizzle/schema";
 import { onlyStaff } from "~/lib/auth.server";
 import { sqlFilterBackend } from "~/lib/query.server";
-import { dateFormat } from "~/lib/time";
+import { calculateMinutes, dateFormat, isTimeNotWithinRange } from "~/lib/time";
 import { getPricelist } from "./panel.pulsa";
 import { DigiCategory, TPriceList } from "~/lib/digiflazz";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -227,6 +227,16 @@ const collums: ColumnDef<TData>[] = [
         },
         header: "Margin"
     },
+    {
+        enableSorting: false,
+        id: "downtime",
+        accessorFn: (d) => {
+            // return `${d.data?.start_cut_off} - ${d.data?.end_cut_off} ${isTimeNotWithinRange('14:22', '15:00')}`
+            return `${d.data?.start_cut_off} - ${d.data?.end_cut_off} ( ${calculateMinutes(d.data?.start_cut_off || '0', d.data?.end_cut_off || '0')}m )`
+        },
+        header: "Downtime"
+    },
+
     // {
     //     id: "created_at",
     //     accessorFn: (d) => dateFormat(new Date(d.created_at || 0)),

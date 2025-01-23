@@ -18,6 +18,7 @@ import { getListDB } from "~/lib/ledger.server";
 import { TFormGame } from "./panel.games";
 import { TFormEmoney } from "./panel.e-money";
 import { processDigi } from "~/lib/process.server";
+import { isTimeNotWithinRange } from "~/lib/time";
 
 const optionMobileOperators = [
     { label: "Telkomsel", value: "telkomsel", pattern: /^(0)?(811|812|813|821|822|823|852|853)\d{5,9}$/ },
@@ -253,19 +254,24 @@ export function CardProduct({ data, active, setForm }: { data?: typeof productTa
     if (!data) return null
 
     const { mitra_sell, price_sell } = calculateProfit(data)
+    const isDisable = !isTimeNotWithinRange(data.data?.start_cut_off || "0:0", data.data?.end_cut_off || '0:0')
+    if(isDisable) return null
 
     return <div
         onClick={() => {
+            if(isDisable) return 
             setForm((cur: any) => ({ ...cur, product: data }))
         }}
-        className={cn("p-4 rounded-lg cursor-pointer border-2", active ? "border-blue-500" : "")}
+        className={cn(
+            "p-4 rounded-lg cursor-pointer border-2", 
+            active ? "border-blue-500" : "",
+            isDisable ? "bg-red-100 border-red-500" : ""
+        )}
     >
         <div className="font-bold">{data.name}</div>
         <div className="flex gap-4 justify-between mt-1 border-t pt-1 text-xs">
-
-
             <div>{formatCurrency(mitra_sell.toFixed(0))}</div>
-            <div>Rek Jual : {formatCurrency(price_sell.toFixed(0))}</div>
+            {isDisable ? <div>{data.data?.start_cut_off} {data.data?.end_cut_off}</div> : <div>Rek Jual : {formatCurrency(price_sell.toFixed(0))}</div> }
         </div>
     </div>
 }
