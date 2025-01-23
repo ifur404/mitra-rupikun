@@ -2,10 +2,10 @@ import { Input } from "~/components/ui/input";
 import { HeaderBack } from "./panel._index";
 import { ActionFunctionArgs, LoaderFunctionArgs, redirect } from "@remix-run/cloudflare";
 import { Label } from "~/components/ui/label";
-import { allowAny } from "~/lib/auth.server";
+import { allowAny, TAuth } from "~/lib/auth.server";
 import { DigiCategory, Digiflazz, TPriceList } from "~/lib/digiflazz";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
-import { useEffect, useState } from "react";
+import { Dispatch, FormEvent, ReactNode, SetStateAction, useEffect, useMemo, useState } from "react";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { formatCurrency } from "~/components/InputCurrency";
 import { Button } from "~/components/ui/button";
@@ -14,10 +14,11 @@ import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, Dr
 import { db } from "~/drizzle/client.server";
 import { desc, eq } from "drizzle-orm";
 import { ledgerTable, productTable } from "~/drizzle/schema";
-import { LedgerTypeEnum } from "~/data/enum";
 import { toast } from "sonner";
 import { CACHE_KEYS } from "~/data/cache";
 import { getListDB } from "~/lib/ledger.server";
+import { TFormGame } from "./panel.games";
+import { TFormEmoney } from "./panel.e-money";
 
 const optionMobileOperators = [
     { label: "Telkomsel", value: "telkomsel", pattern: /^(0)?(811|812|813|821|822|823|852|853)\d{5,9}$/ },
@@ -72,49 +73,58 @@ export async function loader(req: LoaderFunctionArgs) {
     }
 }
 
-export async function action(req: ActionFunctionArgs) {
-    const user = await allowAny(req)
-    const { DIGI_USERNAME, DIGI_APIKEY, WEBHOOK_URL, NODE_ENV } = req.context.cloudflare.env
-    const formData = await req.request.formData()
-    const form = JSON.parse(formData.get("json")?.toString() || '') as TFormPulsa
-    const products = await getListDB(req.context.cloudflare.env, "Pulsa")
-    const product = products.find(e => e.data?.buyer_sku_code === form.product?.code)
+export async function processDigi(env: Env, user: TAuth, form:any) {
+    const { DIGI_USERNAME, DIGI_APIKEY, WEBHOOK_URL, NODE_ENV, DB} = env
+    const mydb = db(DB)
+    const product = await mydb.query.productTable.findFirst({
+        where: eq(productTable.code, form.product?.code || '')
+    })
     if (!product) throw new Error("Error")
-    const mydb = db(req.context.cloudflare.env.DB)
+
     const saldo = await mydb.query.ledgerTable.findFirst({
         where: eq(ledgerTable.key, user.id.toString()),
         orderBy: desc(ledgerTable.created_at)
     })
+
     if (saldo) {
-        if (saldo.after > (product.price || 0)) {
+        const calculate = calculateProfit(product)
+
+        if (saldo.after > calculate.mitra_sell) {
             const digiflazz = new Digiflazz(DIGI_USERNAME, DIGI_APIKEY)
             const response = await digiflazz.processTransactionPulsa({
                 sku: product.code,
-                customer_no: form.customer_no,
+                customer_no: form?.customer_no || form?.game_id,
                 webhook_url: WEBHOOK_URL,
                 isProd: NODE_ENV === "production",
             })
-
+        
             const transaction = await mydb.insert(ledgerTable).values({
                 uuid: response.ref_id,
                 before: saldo.after,
-                mutation: product.price,
-                after: saldo.after - (product?.price || 0),
+                mutation: calculate.mitra_sell,
+                after: saldo.after - calculate.mitra_sell,
                 key: user.id.toString(),
                 created_by: user.id,
                 created_at: new Date().getTime(),
                 data: {
                     pulsa: form,
                     response,
+                    calculate,
                 },
             }).returning({ uuid: ledgerTable.uuid })
-
             throw redirect(`/panel/transaksi/${transaction[0].uuid}`)
         }
         return { error: "Saldo tidak cukup, silahkan topup terlebih dahulu", }
     }
-
     throw new Error("Failed")
+}
+
+export async function action(req: ActionFunctionArgs) {
+    const user = await allowAny(req)
+    const formData = await req.request.formData()
+    const form = JSON.parse(formData.get("json")?.toString() || '') as TFormPulsa
+    const res = await processDigi(req.context.cloudflare.env, user, form)
+    return res
 }
 
 export type TFormPulsa = {
@@ -137,6 +147,12 @@ export default function PanelPulsa() {
             setForm(cur => ({ ...cur, brand: identifikasi }))
         }
     }, [form.customer_no])
+
+    const mitra_sell = useMemo(() => {
+        if (!form.product) return 0
+        const { mitra_sell } = calculateProfit(form.product)
+        return mitra_sell
+    }, [form.product])
 
     return <div className="space-y-4 text-sm">
         <HeaderBack title="Pulsa" />
@@ -169,29 +185,29 @@ export default function PanelPulsa() {
 
         <div className="space-y-4">
             {loaderData.data.filter(e => e.data?.brand.toLowerCase() === form.brand?.value.toLowerCase()).map((e) => {
-                return <div
-                    key={e.code}
-                    onClick={() => {
-                        setForm(cur => ({ ...cur, product: e }))
-                    }}
-                    className={cn("p-4 rounded-lg cursor-pointer border-2", form.product?.code === e.data?.buyer_sku_code ? "border-blue-500" : "")}
-                >
-                    <div>{e.name}</div>
-                    <div className="flex gap-4">
-                        <div className="font-extrabold">{formatCurrency(e?.price?.toString() || '')}</div>
-                    </div>
-                </div>
+                return <CardProduct key={e.code} data={e} active={form.product?.code === e.data?.buyer_sku_code} setForm={setForm} />
             })}
         </div>
 
-        <ProcessBayar form={form} />
+        <ProcessBayar total={mitra_sell}>
+            <input name="intent" value="intent" hidden readOnly />
+            <input name="json" value={JSON.stringify(form)} hidden readOnly />
+
+            {Object.entries(pickKeys(form.product || {}, ['name', 'code', 'price'] as any)).map(([key, value]) => (
+                <div key={key} className="flex justify-between border-b border-gray-200 py-2">
+                    <span className="text-gray-600">{key.split("_").join(" ")}</span>
+                    <span className="text-gray-900 font-medium">
+                        {formatValue(key, value)}
+                    </span>
+                </div>
+            ))}
+
+        </ProcessBayar>
 
     </div >
 }
 
-function ProcessBayar({ form }: { form: TFormPulsa }) {
-    const selectedKeys = ['product_name', 'category', 'brand', 'type', 'seller_name', 'price', 'buyer_sku_code'] as any;
-
+export function ProcessBayar({ children, total }: { children: ReactNode, total: number }) {
     const fetcher = useFetcher<typeof action>()
     const loading = fetcher.state !== "idle"
 
@@ -205,11 +221,10 @@ function ProcessBayar({ form }: { form: TFormPulsa }) {
         }
     }, [fetcher.state]);
 
-    function processBayar() {
-        const data = new FormData();
-        data.append("intent", "process")
-        data.append("json", JSON.stringify(form));
-        fetcher.submit(data, {
+    function processBayar(e: FormEvent<HTMLFormElement>) {
+        e.preventDefault()
+        const formData = new FormData(e.currentTarget)
+        fetcher.submit(formData, {
             action: '?index',
             method: "POST"
         })
@@ -219,7 +234,7 @@ function ProcessBayar({ form }: { form: TFormPulsa }) {
         <div className="max-w-md mx-auto bg-white flex justify-between border p-4 rounded-lg">
             <div>
                 <div className="text-gray-800">Total Harga</div>
-                <b className="text-xl">{formatCurrency(form.product?.price?.toString() || "0")}</b>
+                <b className="text-xl">{formatCurrency(total.toFixed(0))}</b>
             </div>
             <div>
                 <Drawer>
@@ -231,28 +246,21 @@ function ProcessBayar({ form }: { form: TFormPulsa }) {
                             <DrawerTitle>Apakah kamu yakin ?</DrawerTitle>
                             <DrawerDescription>Pembelian tidak dapat dibatalkan</DrawerDescription>
                         </DrawerHeader>
-                        <div className="p-4">
-                            {Object.entries(pickKeys(form.product || {}, selectedKeys)).map(([key, value]) => (
-                                <div key={key} className="flex justify-between border-b border-gray-200 py-2">
-                                    <span className="text-gray-600">{key.split("_").join(" ")}</span>
-                                    <span className="text-gray-900 font-medium">
-                                        {formatValue(key, value)}
-                                    </span>
-                                </div>
-                            ))}
+                        <form className="p-4" onSubmit={processBayar}>
+                            {children}
                             {fetcher.data?.error && <p className="py-4 text-red-500 text-center">{fetcher.data?.error}</p>}
                             <div className="flex gap-8 justify-center mb-20 w-full mt-4">
                                 <DrawerClose asChild>
                                     <Button variant="destructive" >Batal</Button>
                                 </DrawerClose>
-                                <Button onClick={processBayar} disabled={loading}>{loading ? "Loading..." : "Lanjutkan"}</Button>
+                                <Button type="submit" disabled={loading}>{loading ? "Loading..." : "Lanjutkan"}</Button>
                             </div>
-                        </div>
+                        </form>
                     </DrawerContent>
                 </Drawer>
             </div>
         </div>
-        </div>
+    </div>
 }
 
 export function pickKeys<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
@@ -273,3 +281,39 @@ export const formatValue = (key: string, value: any): string => {
     }
     return String(value);
 };
+
+export function calculateProfit(data: typeof productTable.$inferSelect) {
+    const price_sell = data?.price || 0
+    const digi = data.data?.price || 0
+    const profit = price_sell - digi
+    const app = profit / 2
+    const mitra_sell = digi + app
+    return {
+        price_sell,
+        digi,
+        profit,
+        app,
+        mitra_sell,
+    }
+}
+
+export function CardProduct({ data, active, setForm }: { data?: typeof productTable.$inferSelect; active: boolean, setForm: Dispatch<SetStateAction<any>> }) {
+    if (!data) return null
+
+    const { mitra_sell, price_sell } = calculateProfit(data)
+
+    return <div
+        onClick={() => {
+            setForm((cur: any) => ({ ...cur, product: data }))
+        }}
+        className={cn("p-4 rounded-lg cursor-pointer border-2", active ? "border-blue-500" : "")}
+    >
+        <div className="font-bold">{data.name}</div>
+        <div className="flex gap-4 justify-between mt-1 border-t pt-1 text-xs">
+
+
+            <div>{formatCurrency(mitra_sell.toFixed(0))}</div>
+            <div>Rek Jual : {formatCurrency(price_sell.toFixed(0))}</div>
+        </div>
+    </div>
+}

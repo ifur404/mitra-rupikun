@@ -12,7 +12,7 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Search } from "lucide-react";
 import { TFormGame } from "./panel.games";
-import { TFormPulsa } from "./panel.pulsa";
+import { calculateProfit, TFormPulsa } from "./panel.pulsa";
 import { TFormTopUp } from "./dashboard.user";
 import { CHOICE_STATUS, TResponseTransaction, TWebhookData } from "~/lib/digiflazz";
 import { TFormEmoney } from "./panel.e-money";
@@ -26,9 +26,16 @@ export type TDataLedger = {
   webhook?: TWebhookData;
   webhook_detail?: any;
   complain?: string;
+  calculate?: {
+    price_sell: number;
+    digi: number;
+    profit: number;
+    app: number;
+    mitra_sell: number;
+  }
 }
 
-export const LIST_KEYS:(keyof TDataLedger)[] = ['pulsa', 'games','emoney']
+export const LIST_KEYS: (keyof TDataLedger)[] = ['pulsa', 'games', 'emoney']
 
 export async function loader(req: LoaderFunctionArgs) {
   const user = await allowAny(req)
@@ -89,7 +96,7 @@ export default function paneltransaksi() {
       </form>
       <div className="flex flex-col gap-4">
         {loaderData.data.map((e, i) => {
-          if(e.data?.topup){
+          if (e.data?.topup) {
             return <Link to={`/panel/transaksi/${e.uuid}`} key={e.uuid} className="p-4 rounded-lg border">
               <div>Top up </div>
               <b>{formatCurrency(e.mutation?.toString() || '')}</b>
@@ -99,7 +106,7 @@ export default function paneltransaksi() {
 
           const d = e.data || {}
           const match = LIST_KEYS.find((key) => key in d && d[key] !== undefined);
-          if(!match) return null
+          if (!match) return null
           const matchedData = d[match];
           const status = e.data?.webhook?.status || e.data?.response?.status
           return <Link to={`/panel/transaksi/${e.uuid}`} key={e.uuid} className="p-4 rounded-lg border">

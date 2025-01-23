@@ -1,5 +1,5 @@
-import { Link, useLoaderData, useRouteLoaderData } from "@remix-run/react"
-import { ChevronLeft, Gamepad, Smartphone, Wallet, Wifi, Zap } from 'lucide-react'
+import { Link, useLoaderData } from "@remix-run/react"
+import { ChevronLeft, Gamepad, Smartphone, Wallet } from 'lucide-react'
 import { Home, List, User } from "lucide-react";
 import { LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { allowAny } from "~/lib/auth.server";
@@ -42,11 +42,19 @@ export default function PanelHome() {
       <div>
         Halo {loaderData.user.name}
       </div>
-      <div className="grid grid-cols-2 mt-4 px-4">
-        <div>
-          <div className="text-2xl font-bold">{formatCurrency(loaderData.saldo.toString())}</div>
+      <div className="grid grid-cols-2 mt-4 gap-2">
+        <div className="border p-2 rounded-lg space-y-2">
           <p className="text-xs">Saldo</p>
-          <Link to="https://wa.me/6282122012959?text=Saya Mau Top Up Saldo Mitra" target="_blank"><Button size="sm" variant="outline">Top up</Button></Link>
+          <div className="text-xl font-bold">{formatCurrency(loaderData.saldo.toString())}</div>
+          <div className="mt-2 border-t pt-2">
+            <Link to="https://wa.me/6282122012959?text=Saya Mau Top Up Saldo Mitra" target="_blank"><Button size="sm" variant="default" className="w-full">Top up</Button></Link>
+          </div>
+        </div>
+        <div className="border p-2 rounded-lg space-y-2">
+          <p className="text-xs">Profit</p>
+          {/* <div className="text-2xl font-bold">{formatCurrency("0")}</div> */}
+          <div className="text-xl font-bold">{formatCurrency("0")}</div>
+          <p className="text-xs">comming soon</p>
         </div>
       </div>
 

@@ -9,7 +9,6 @@ import { formatValue, pickKeys } from "./panel.pulsa";
 import { Textarea } from "~/components/ui/textarea";
 import { Label } from "~/components/ui/label";
 import { Button } from "~/components/ui/button";
-import { LedgerTypeEnum } from "~/data/enum";
 import { Check, Loader2, XCircle } from "lucide-react";
 import { useLiveLoader } from "~/hooks/use-live-loader";
 import { useFetcher } from "@remix-run/react";
