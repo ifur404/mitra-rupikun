@@ -8,7 +8,8 @@ import { useMemo, useState } from "react";
 import { useLoaderData } from "@remix-run/react";
 import { productTable } from "~/drizzle/schema";
 import { getListDB } from "~/lib/ledger.server";
-import { calculateProfit, CardProduct, formatValue, pickKeys, ProcessBayar, processDigi } from "./panel.pulsa";
+import { calculateProfit, CardProduct, formatValue, pickKeys, ProcessBayar } from "./panel.pulsa";
+import { processDigi } from "~/lib/process.server";
 
 const OPTION_EMONEY = [
     { label: "Dana", value: "Dana", },

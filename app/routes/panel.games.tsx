@@ -1,7 +1,8 @@
 import { allowAny } from "~/lib/auth.server";
 import { HeaderBack } from "./panel._index";
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { calculateProfit, CardProduct, formatValue, pickKeys, ProcessBayar, processDigi } from "./panel.pulsa";
+import { calculateProfit, CardProduct, formatValue, pickKeys, ProcessBayar } from "./panel.pulsa";
+import { processDigi } from "~/lib/process.server";
 import { useLoaderData } from "@remix-run/react";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { Label } from "~/components/ui/label";
