@@ -239,7 +239,7 @@ export function calculateProfit(data: typeof productTable.$inferSelect) {
     const price_sell = data?.price || 0
     const digi = data.data?.price || 0
     const profit = price_sell - digi
-    const app = profit / 2
+    const app = Math.round(profit / 2)
     const mitra_sell = digi + app
     return {
         price_sell,
