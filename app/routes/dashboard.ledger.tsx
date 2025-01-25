@@ -74,11 +74,6 @@ const collums: ColumnDef<TData>[] = [
         header: "key"
     },
     {
-        id: "type",
-        accessorKey: 'type',
-        header: "type"
-    },
-    {
         id: "before",
         accessorFn: (d) => formatCurrency(d?.before?.toString() || "0"),
         header: "before"

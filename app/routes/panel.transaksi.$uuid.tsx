@@ -14,7 +14,7 @@ import { useLiveLoader } from "~/hooks/use-live-loader";
 import { useFetcher } from "@remix-run/react";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { sendIpurNotification } from "~/lib/telegram";
+import { sendIpurNotification } from "~/lib/telegram.server";
 
 export async function loader(req: LoaderFunctionArgs) {
     const user = await allowAny(req)

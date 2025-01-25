@@ -6,7 +6,8 @@ import crypto from 'node:crypto';
 import { eq } from "drizzle-orm";
 import { CACHE_KEYS } from "~/data/cache";
 import { emitter } from "~/lib/emitter.server";
-import { sendIpurNotification } from "~/lib/telegram";
+import { sendIpurNotification } from "~/lib/telegram.server";
+import { refundTransaction } from "~/lib/ledger.server";
 
 // function CheckSignature(body: string, sign: string, secret: string) {
 //     const signature = crypto
@@ -24,35 +25,35 @@ export async function CheckSignature(
     body: string,
     sign: string,
     secret: string
-  ): Promise<[boolean, string]> {
+): Promise<[boolean, string]> {
     // Encode the request body and secret as Uint8Array
     const encoder = new TextEncoder();
     const data = encoder.encode(body);
     const keyData = encoder.encode(secret);
-  
+
     // Import the secret as an HMAC key with SHA-1
     const key = await crypto.subtle.importKey(
-      "raw",
-      keyData,
-      { name: "HMAC", hash: { name: "SHA-1" } },
-      false,
-      ["sign"]
+        "raw",
+        keyData,
+        { name: "HMAC", hash: { name: "SHA-1" } },
+        false,
+        ["sign"]
     );
-  
+
     // Sign the body
     const signatureBuffer = await crypto.subtle.sign("HMAC", key, data);
-  
+
     // Convert the resulting ArrayBuffer to a hex string
     const byteArray = new Uint8Array(signatureBuffer);
     let computedHex = "";
     for (let i = 0; i < byteArray.length; i++) {
-      computedHex += byteArray[i].toString(16).padStart(2, "0");
+        computedHex += byteArray[i].toString(16).padStart(2, "0");
     }
-  
+
     const expectedSignature = `sha1=${computedHex}`;
-   
+
     return [(sign === expectedSignature), expectedSignature]
-  }
+}
 
 export async function action(req: ActionFunctionArgs) {
     const rawBody = await req.request.text();
@@ -98,6 +99,10 @@ export async function action(req: ActionFunctionArgs) {
         await req.context.cloudflare.env.KV.put(CACHE_KEYS.SALDO_GLOBAL, data.buyer_last_saldo.toString(), {
             expirationTtl: 60
         })
+
+        if(webhookPayload.formdata.status === "Gagal"){
+            await refundTransaction(req.context.cloudflare.env, ledger, )
+        }
 
         await sendIpurNotification(`Webhook \n${JSON.stringify(webhookPayload.formdata, null, "\t")}`, req.context.cloudflare.env.TELEGRAM_TOKEN)
         emitter.emit("/");

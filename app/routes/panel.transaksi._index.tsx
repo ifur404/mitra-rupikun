@@ -12,9 +12,9 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Search } from "lucide-react";
 import { TFormGame } from "./panel.games";
-import { calculateProfit, TFormPulsa } from "./panel.pulsa";
+import { TFormPulsa } from "./panel.pulsa";
 import { TFormTopUp } from "./dashboard.user";
-import { CHOICE_STATUS, TResponseTransaction, TWebhookData } from "~/lib/digiflazz";
+import { TResponseTransaction, TWebhookData } from "~/lib/digiflazz";
 import { TFormEmoney } from "./panel.e-money";
 
 export type TDataLedger = {
@@ -32,7 +32,8 @@ export type TDataLedger = {
     profit: number;
     app: number;
     mitra_sell: number;
-  }
+  },
+  ref_id?: string;
 }
 
 export const LIST_KEYS: (keyof TDataLedger)[] = ['pulsa', 'games', 'emoney']
