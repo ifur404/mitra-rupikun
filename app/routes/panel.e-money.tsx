@@ -77,7 +77,7 @@ export async function action(req: ActionFunctionArgs) {
     const user = await allowAny(req)
     const formData = await req.request.formData()
     const form = JSON.parse(formData.get("json")?.toString() || '') as TFormEmoney
-    const res = await processDigi(req.context.cloudflare.env, user, form)
+    const res = await processDigi(req.context.cloudflare.env, user, form, 'emoney')
     return res
 }
 

@@ -172,7 +172,8 @@ function ButtonExport(){
                 before: e.before,
                 mutation: e.mutation,
                 after: e.after,
-                data: Object.keys(pickKeys(e.data || {}, ['games', 'emoney', 'refund_id', 'topup']))[0] || '',
+                profit: e.data?.calculate?.app || 0,
+                data: Object.keys(pickKeys(e.data || {}, ['pulsa','games', 'emoney', 'refund_id', 'topup']))[0] || '',
                 created_at: new Date(e.created_at || ''),
             }))
             const wb = XLSX.utils.book_new();
@@ -183,7 +184,7 @@ function ButtonExport(){
     },[fetcher.state])
     return <Button disabled={loading} onClick={()=> {
         const p = params
-        p.append("size","10000")
+        p.append("limit","10000")
         fetcher.load(`?${p.toString()}`)
     }}>
         {loading ? <Loader2 className="animate-spin"/> : <Sheet />} Export 

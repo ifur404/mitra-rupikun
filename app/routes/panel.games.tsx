@@ -31,7 +31,7 @@ export async function action(req: ActionFunctionArgs) {
     const user = await allowAny(req)
     const formData = await req.request.formData()
     const form = JSON.parse(formData.get("json")?.toString() || '') as TFormGame
-    const res = await processDigi(req.context.cloudflare.env, user, form)
+    const res = await processDigi(req.context.cloudflare.env, user, form, 'games')
     return res
 }
 
