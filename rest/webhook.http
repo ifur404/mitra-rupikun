@@ -34,3 +34,29 @@ X-Digiflazz-Event: create
         "wa": "081234512345"
     }
 }
+
+
+###
+POST https://mitra.rupikun.com/webhookyaaaa HTTP/1.1
+Host: mitra.rupikun.com
+X-Hub-Signature: sha1=7d6f016c23d03b696e76dada91c07f178cc0af4d
+User-Agent: Digiflazz-Hookshot
+Content-Type: application/json
+Content-Length: 445
+X-Digiflazz-Event: create
+
+{
+    "data": {
+        "trx_id": "6793be973aa31e75296f419c",
+        "ref_id": "fce9179d-e393-4bf3-b051-0f1f228be13d",
+        "customer_no": "081574954979",
+        "buyer_sku_code": "ovo50",
+        "message": "Transaksi Refund",
+        "status": "Gagal",
+        "rc": "74",
+        "buyer_last_saldo": 143994,
+        "sn": "",
+        "price": 50000,
+        "tele": "@cs_sagaramobile"
+    }
+}

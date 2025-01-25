@@ -74,7 +74,7 @@ export async function action(req: ActionFunctionArgs) {
     const mydb = db(req.context.cloudflare.env.DB)
 
     await mydb.insert(webhookTable).values({
-        data: JSON.stringify(webhookPayload),
+        data: webhookPayload,
     });
 
     if (data.ref_id) {
@@ -96,9 +96,9 @@ export async function action(req: ActionFunctionArgs) {
             }
         }).where(eq(ledgerTable.uuid, data.ref_id))
 
-        await req.context.cloudflare.env.KV.put(CACHE_KEYS.SALDO_GLOBAL, data.buyer_last_saldo.toString(), {
-            expirationTtl: 60
-        })
+        // await req.context.cloudflare.env.KV.put(CACHE_KEYS.SALDO_GLOBAL, data.buyer_last_saldo.toString(), {
+        //     expirationTtl: 60
+        // })
 
         if(webhookPayload.formdata.status === "Gagal"){
             await refundTransaction(req.context.cloudflare.env, ledger, )

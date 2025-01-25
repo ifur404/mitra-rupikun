@@ -33,7 +33,7 @@ export type TDataLedger = {
     app: number;
     mitra_sell: number;
   },
-  ref_id?: string;
+  refund_id?: string;
 }
 
 export const LIST_KEYS: (keyof TDataLedger)[] = ['pulsa', 'games', 'emoney']

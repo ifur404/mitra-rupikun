@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm"
+import { and, asc, desc, eq } from "drizzle-orm"
 import { db } from "~/drizzle/client.server"
 import { ledgerTable, productTable } from "~/drizzle/schema"
 
@@ -14,7 +14,8 @@ export async function getListDB(env: Env, category?:string){
 export async function refundTransaction(env:Env, data: typeof ledgerTable.$inferSelect | undefined) {
     const mydb = db(env.DB)
     const last = await mydb.query.ledgerTable.findFirst({
-        where: eq(ledgerTable.key, data?.created_by?.toString() || '')
+        where: eq(ledgerTable.key, data?.created_by?.toString() || ''),
+        orderBy: desc(ledgerTable.created_at),
     })
     const after = ((last?.after||0) + (data?.mutation ||0))
     await mydb.insert(ledgerTable).values({
@@ -24,7 +25,7 @@ export async function refundTransaction(env:Env, data: typeof ledgerTable.$infer
         key: data?.created_by?.toString() || '',
         uuid: crypto.randomUUID(),
         data: {
-            ref_id: data?.id.toString(),
+            refund_id: data?.id.toString(),
         }
     })
 }

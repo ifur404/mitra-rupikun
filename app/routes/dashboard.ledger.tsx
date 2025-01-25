@@ -1,17 +1,20 @@
-import { LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { ColumnDef } from "@tanstack/react-table";
-import { and, or, like, sql, getTableColumns } from "drizzle-orm";
+import { and, or, like, sql, getTableColumns, eq, desc } from "drizzle-orm";
 import { DataTable } from "~/components/datatable";
 import FormSearch from "~/components/FormSearch";
 import { formatCurrency } from "~/components/InputCurrency";
 import { PaginationPage } from "~/components/pagination-page";
 import { db } from "~/drizzle/client.server";
-import { ledgerTable } from "~/drizzle/schema";
+import { ledgerTable, productTable } from "~/drizzle/schema";
 import { onlyStaff } from "~/lib/auth.server";
 import { sqlFilterBackend } from "~/lib/query.server";
 import { dateFormat } from "~/lib/time";
 import OpenDetail from "~/components/OpenDetail";
+import { ActionDelete } from "~/components/ActionDelete";
+import { Button } from "~/components/ui/button";
+import { Trash } from "lucide-react";
 
 export async function loader(req: LoaderFunctionArgs) {
     const user = await onlyStaff(req)
@@ -54,10 +57,38 @@ export async function loader(req: LoaderFunctionArgs) {
     }
 }
 
+export async function action(req: ActionFunctionArgs) {
+    const user = await onlyStaff(req)
+    const formData = await req.request.formData()
+
+    const mydb = db(req.context.cloudflare.env.DB)
+    const intent = formData.get("intent")
+    if (intent === "DELETE") {
+        const id = Number(formData.get("id"))
+        // const last = await mydb.query.ledgerTable.findFirst({
+        //     where: eq(ledgerTable.id, id),
+        //     orderBy: desc(ledgerTable.created_at)
+        // })
+        await mydb.delete(ledgerTable).where(eq(ledgerTable.id, id))
+        return {
+            success: true
+        }
+    }
+    throw new Error("Not Valid")
+}
+
 
 type TData = typeof ledgerTable.$inferSelect
 const collums: ColumnDef<TData>[] = [
-
+    {
+        cell: (d) => <div className="flex gap-2">
+            {/* <ButtonEdit data={d.row.original} /> */}
+            <ActionDelete id={d.row.original.id}>
+                <Button size="sm" variant="destructive"><Trash size={20} /> <span className="block md:hidden">Delete</span></Button>
+            </ActionDelete>
+        </div>,
+        header: "Action"
+    },
     {
         id: "id",
         accessorKey: 'id',
