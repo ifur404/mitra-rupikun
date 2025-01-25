@@ -1,7 +1,7 @@
 import { and, asc, desc, eq } from "drizzle-orm"
 import { db } from "~/drizzle/client.server"
 import { ledgerTable, productTable } from "~/drizzle/schema"
-
+import * as XLSX from 'xlsx'
 export async function getListDB(env: Env, category?:string){
     const mydb = db(env.DB)
     const result = await mydb.query.productTable.findMany({

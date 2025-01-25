@@ -1,5 +1,5 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import { useFetcher, useLoaderData, useSearchParams } from "@remix-run/react";
 import { ColumnDef } from "@tanstack/react-table";
 import { and, or, like, sql, getTableColumns, eq, desc } from "drizzle-orm";
 import { DataTable } from "~/components/datatable";
@@ -14,7 +14,10 @@ import { dateFormat } from "~/lib/time";
 import OpenDetail from "~/components/OpenDetail";
 import { ActionDelete } from "~/components/ActionDelete";
 import { Button } from "~/components/ui/button";
-import { Trash } from "lucide-react";
+import { Loader2, Sheet, Trash } from "lucide-react";
+import { useEffect } from "react";
+import * as XLSX from 'xlsx'
+import { pickKeys } from "./panel.pulsa";
 
 export async function loader(req: LoaderFunctionArgs) {
     const user = await onlyStaff(req)
@@ -31,19 +34,16 @@ export async function loader(req: LoaderFunctionArgs) {
             or(...searchableFields.map((c) => like(c, `%${filter.search}%`)))?.if(filter.search)
         )
     )
-
-    const total = await mydb.select({
-        totalCount: sql<number>`COUNT(*)`.as("totalCount"),
-    }).from(mytable).where(where)
-
-
     const data = await mydb
         .select({ ...allColumns }).from(mytable)
         .where(where)
         .limit(filter.limit)
         .offset(filter.offset)
         .orderBy(filter.ordering)
-
+    
+    const total = await mydb.select({
+        totalCount: sql<number>`COUNT(*)`.as("totalCount"),
+    }).from(mytable).where(where)
 
     return {
         data: data,
@@ -74,6 +74,7 @@ export async function action(req: ActionFunctionArgs) {
             success: true
         }
     }
+   
     throw new Error("Not Valid")
 }
 
@@ -138,7 +139,9 @@ export default function DashboardLedger() {
     return (
         <div className="space-y-4 px-4 md:px-0">
             <div className="text-2xl font-bold">Ledger</div>
-            <FormSearch action={<></>} />
+            <FormSearch action={<>
+                <ButtonExport />
+            </>} />
             <DataTable data={loadData.data} columns={collums} />
 
             <PaginationPage page={loadData.page} onChangePage={(e) => {
@@ -152,4 +155,37 @@ export default function DashboardLedger() {
             }} />
         </div>
     )
+}
+
+function ButtonExport(){
+    const fetcher = useFetcher<typeof loader>()
+    const [params, setParams] = useSearchParams()
+
+    const loading = fetcher.state !== "idle"
+
+    useEffect(()=> {
+        if(fetcher.state && fetcher.data){
+            const data = fetcher.data.data.map(e=> ({
+                id: e.id,
+                uuid: e.uuid,
+                key: e.key,
+                before: e.before,
+                mutation: e.mutation,
+                after: e.after,
+                data: Object.keys(pickKeys(e.data || {}, ['games', 'emoney', 'refund_id', 'topup']))[0] || '',
+                created_at: new Date(e.created_at || ''),
+            }))
+            const wb = XLSX.utils.book_new();
+            const worksheet = XLSX.utils.json_to_sheet(data)
+            XLSX.utils.book_append_sheet(wb, worksheet, "Report");
+            XLSX.writeFile(wb, "Report.xlsb");
+        }
+    },[fetcher.state])
+    return <Button disabled={loading} onClick={()=> {
+        const p = params
+        p.append("size","10000")
+        fetcher.load(`?${p.toString()}`)
+    }}>
+        {loading ? <Loader2 className="animate-spin"/> : <Sheet />} Export 
+    </Button>
 }
