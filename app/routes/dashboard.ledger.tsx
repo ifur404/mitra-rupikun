@@ -18,6 +18,11 @@ import { Loader2, Sheet, Trash } from "lucide-react";
 import { useEffect } from "react";
 import * as XLSX from 'xlsx'
 import { pickKeys } from "./panel.pulsa";
+import { SQLiteColumn } from "drizzle-orm/sqlite-core";
+
+function hasKeyInJson(jsonColumn: SQLiteColumn, key: string) {
+    return sql`json_extract(${jsonColumn}, $.${key}) IS NOT NULL`;
+}
 
 export async function loader(req: LoaderFunctionArgs) {
     const user = await onlyStaff(req)
@@ -29,8 +34,11 @@ export async function loader(req: LoaderFunctionArgs) {
     const allColumns = getTableColumns(mytable)
     const searchableFields = [mytable.data]
 
+    const datakey = search.get("datakey")?.toString() || ''
+
     const where = and(
         and(
+            hasKeyInJson(ledgerTable.data, datakey).if(datakey),
             or(...searchableFields.map((c) => like(c, `%${filter.search}%`)))?.if(filter.search)
         )
     )
@@ -40,7 +48,7 @@ export async function loader(req: LoaderFunctionArgs) {
         .limit(filter.limit)
         .offset(filter.offset)
         .orderBy(filter.ordering)
-    
+
     const total = await mydb.select({
         totalCount: sql<number>`COUNT(*)`.as("totalCount"),
     }).from(mytable).where(where)
@@ -74,7 +82,7 @@ export async function action(req: ActionFunctionArgs) {
             success: true
         }
     }
-   
+
     throw new Error("Not Valid")
 }
 
@@ -157,15 +165,15 @@ export default function DashboardLedger() {
     )
 }
 
-function ButtonExport(){
+function ButtonExport() {
     const fetcher = useFetcher<typeof loader>()
     const [params, setParams] = useSearchParams()
 
     const loading = fetcher.state !== "idle"
 
-    useEffect(()=> {
-        if(fetcher.state && fetcher.data){
-            const data = fetcher.data.data.map(e=> ({
+    useEffect(() => {
+        if (fetcher.state && fetcher.data) {
+            const data = fetcher.data.data.map(e => ({
                 id: e.id,
                 uuid: e.uuid,
                 key: e.key,
@@ -173,7 +181,7 @@ function ButtonExport(){
                 mutation: e.mutation,
                 after: e.after,
                 profit: e.data?.calculate?.app || 0,
-                data: Object.keys(pickKeys(e.data || {}, ['pulsa','games', 'emoney', 'refund_id', 'topup']))[0] || '',
+                data: Object.keys(pickKeys(e.data || {}, ['pulsa', 'games', 'emoney', 'refund_id', 'topup']))[0] || '',
                 created_at: new Date(e.created_at || ''),
             }))
             const wb = XLSX.utils.book_new();
@@ -181,12 +189,12 @@ function ButtonExport(){
             XLSX.utils.book_append_sheet(wb, worksheet, "Report");
             XLSX.writeFile(wb, "Report.xlsb");
         }
-    },[fetcher.state])
-    return <Button disabled={loading} onClick={()=> {
+    }, [fetcher.state])
+    return <Button disabled={loading} onClick={() => {
         const p = params
-        p.append("limit","10000")
+        p.append("limit", "10000")
         fetcher.load(`?${p.toString()}`)
     }}>
-        {loading ? <Loader2 className="animate-spin"/> : <Sheet />} Export 
+        {loading ? <Loader2 className="animate-spin" /> : <Sheet />} Export
     </Button>
 }
