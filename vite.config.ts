@@ -1,4 +1,3 @@
-import { sentryVitePlugin } from "@sentry/vite-plugin";
 import {
   vitePlugin as remix,
   cloudflareDevProxyVitePlugin as remixCloudflareDevProxy,
@@ -21,12 +20,9 @@ export default defineConfig({
       v3_singleFetch: true,
       v3_lazyRouteDiscovery: true,
     },
-  }), tsconfigPaths(), sentryVitePlugin({
-    org: "upkan",
-    project: "mitra"
-  })],
+  }), tsconfigPaths()],
 
   build: {
-    sourcemap: true
+    sourcemap: false
   }
 });
