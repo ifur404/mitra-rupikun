@@ -5,12 +5,12 @@ export default function useUserBalance(user_id:number) {
 
     async function getSaldo() {
       try {
-        const response = await fetch(`/api/saldo/?key=${user_id}`);
+        const response = await fetch(`/api/ledger/?key=${user_id}`);
         if (!response.ok) {
           throw new Error(`Failed to fetch saldo for user ${user_id}`);
         }
-        const data = await response.json() as {saldo:number};
-        setSaldo(data?.saldo ?? 0);
+        const data = await response.json() as {sum:number};
+        setSaldo(data?.sum ?? 0);
       } catch (err: any) {
         setSaldo(0); // fallback
       } 

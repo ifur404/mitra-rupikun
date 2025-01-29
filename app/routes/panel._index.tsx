@@ -4,10 +4,11 @@ import { Home, List, User } from "lucide-react";
 import { LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { allowAny } from "~/lib/auth.server";
 import { db } from "~/drizzle/client.server";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { ledgerTable } from "~/drizzle/schema";
 import { formatCurrency } from "~/components/InputCurrency";
 import { Button } from "~/components/ui/button";
+import { sumProfitUser } from "~/lib/ledger.server";
 
 export const OPTION_SERVICES = [
   { icon: Smartphone, label: "Pulsa", badge: "" },
@@ -27,10 +28,10 @@ export async function loader(req: LoaderFunctionArgs) {
     where: eq(ledgerTable.key, user.id.toString()),
     orderBy: desc(ledgerTable.created_at)
   })
-
   return {
     user,
-    saldo: ledger?.after || 0
+    saldo: ledger?.after || 0,
+    profit: await sumProfitUser(req.context.cloudflare.env, user.id.toString()) || 0
   }
 }
 
@@ -53,8 +54,8 @@ export default function PanelHome() {
         <div className="border p-2 rounded-lg space-y-2">
           <p className="text-xs">Profit</p>
           {/* <div className="text-2xl font-bold">{formatCurrency("0")}</div> */}
-          <div className="text-xl font-bold">{formatCurrency("0")}</div>
-          <p className="text-xs">comming soon</p>
+          <div className="text-xl font-bold">{formatCurrency(loaderData.profit.toString())}</div>
+          {/* <p className="text-xs"></p> */}
         </div>
       </div>
 

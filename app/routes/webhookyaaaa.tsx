@@ -1,6 +1,6 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { db } from "~/drizzle/client.server";
-import { ledgerTable, webhookTable } from "~/drizzle/schema";
+import { ledgerTable, productTable, webhookTable } from "~/drizzle/schema";
 import { TWebhookData } from "~/lib/digiflazz";
 import crypto from 'node:crypto';
 import { eq } from "drizzle-orm";
@@ -101,7 +101,7 @@ export async function action(req: ActionFunctionArgs) {
         // })
 
         if(webhookPayload.formdata.status === "Gagal"){
-            await refundTransaction(req.context.cloudflare.env, ledger, )
+            await refundTransaction(req.context.cloudflare.env, ledger)
         }
 
         await sendIpurNotification(`Webhook \n${JSON.stringify(webhookPayload.formdata, null, "\t")}`, req.context.cloudflare.env.TELEGRAM_TOKEN)

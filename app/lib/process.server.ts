@@ -32,6 +32,10 @@ export async function processDigi(env: Env, user: TAuth, form: any, key_form: 'p
                 isProd: NODE_ENV === "production",
             });
 
+            if(response.status==="Gagal"){
+                return { error: response.message, };
+            }
+
             const transaction = await mydb.insert(ledgerTable).values({
                 uuid: response.ref_id,
                 before: saldo.after,

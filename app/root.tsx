@@ -1,10 +1,12 @@
 import type { LinksFunction } from "@remix-run/cloudflare";
 import {
+  isRouteErrorResponse,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useRouteError,
 } from "@remix-run/react";
 
 import styles from "./tailwind.css?url"
@@ -50,41 +52,41 @@ export default function App() {
   return <Outlet />
 }
 
-// export function ErrorBoundary() {
-//   const error = useRouteError();
+export function ErrorBoundary() {
+  const error = useRouteError();
 
-//   // Log the error to the console
-//   console.error(error);
+  // Log the error to the console
+  console.error(error);
 
-//   if (isRouteErrorResponse(error)) {
-//     const title = `${error.status} ${error.statusText}`;
+  if (isRouteErrorResponse(error)) {
+    const title = `${error.status} ${error.statusText}`;
 
-//     let message;
-//     switch (error.status) {
-//       case 401:
-//         message =
-//           'Oops! Looks like you tried to visit a page that you do not have access to.';
-//         break;
-//       case 404:
-//         message =
-//           'Oops! Looks like you tried to visit a page that does not exist.';
-//         break;
-//       default:
-//         message = JSON.stringify(error.data, null, 2);
-//         break;
-//     }
+    let message;
+    switch (error.status) {
+      case 401:
+        message =
+          'Oops! Looks like you tried to visit a page that you do not have access to.';
+        break;
+      case 404:
+        message =
+          'Oops! Looks like you tried to visit a page that does not exist.';
+        break;
+      default:
+        message = JSON.stringify(error.data, null, 2);
+        break;
+    }
 
-//     return <ErrorLayout title={title} description={message} />
-//   }
+    return <ErrorLayout title={title} description={message} />
+  }
 
-//   return <ErrorLayout title="There was an error" description={`${error}`} />
-// }
+  return <ErrorLayout title="There was an error" description={`${error}`} />
+}
 
-// function ErrorLayout({ title, description }: { title: string; description: string }) {
-//   return <div className="flex h-screen w-full justify-center items-center">
-//     <div className="prose">
-//       <h1>{title}</h1>
-//       <div>{description}</div>
-//     </div>
-//   </div>
-// }
+function ErrorLayout({ title, description }: { title: string; description: string }) {
+  return <div className="flex h-screen w-full justify-center items-center">
+    <div className="prose">
+      <h1>{title}</h1>
+      <div>{description}</div>
+    </div>
+  </div>
+}

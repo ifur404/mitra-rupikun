@@ -15,8 +15,6 @@ import { productTable } from "~/drizzle/schema";
 import { toast } from "sonner";
 import { CACHE_KEYS } from "~/data/cache";
 import { getListDB } from "~/lib/ledger.server";
-import { TFormGame } from "./panel.games";
-import { TFormEmoney } from "./panel.e-money";
 import { processDigi } from "~/lib/process.server";
 import { isTimeNotWithinRange } from "~/lib/time";
 

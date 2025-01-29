@@ -17,6 +17,7 @@ import { Textarea } from "~/components/ui/textarea"
 import { db } from "~/drizzle/client.server"
 import { ledgerTable, userTable } from "~/drizzle/schema"
 import useUserBalance from "~/hooks/use-user-balance"
+import useUserProfit from "~/hooks/use-user-profit"
 import { onlyStaff } from "~/lib/auth.server"
 import { sqlFilterBackend } from "~/lib/query.server"
 import { dateFormat } from "~/lib/time"
@@ -233,10 +234,34 @@ function ShowSaldo({ data }: { data: TData }) {
   </Dialog>
 }
 
-function ButtonEdit({ data }: { data: TData }) {
-  return <SheetAction keyReq={`EDIT_${data.id}`} title="Edit Data" triger={<Button size="sm"><Edit size={20} /></Button>}>
-    <input name="intent" value="EDIT_DATA" hidden readOnly />
-    <input name="id" value={data.id} hidden readOnly />
-    {/* <RenderForm data={data}/> */}
-  </SheetAction>
-}
+// function ShowProfit({ data }: { data: TData }) {
+//   const [range, setRange] = useState<number[]>([])
+//   const profit = useUserProfit(data.id, range)
+//   const [show, setShow] = useState(false)
+//   const balance = profit.sum
+//   const balance_idr = formatCurrency(balance.toString())
+
+//   function toggleShow() {
+//     setShow(cur => !cur)
+//   }
+
+//   useEffect(() => {
+//     profit.getData()
+//   }, [range]);
+
+//   return <Dialog open={show} onOpenChange={toggleShow}>
+//     <DialogTrigger asChild>
+//       <button className="w-full flex">{balance_idr} <ChevronDown /></button>
+//     </DialogTrigger>
+//     <DialogContent>
+//       <DialogHeader>
+//         <DialogTitle>Profit</DialogTitle>
+//         <DialogDescription>Jumlah Profit dari user</DialogDescription>
+//       </DialogHeader>
+//       <div>
+
+//       </div>
+//     </DialogContent>
+//   </Dialog>
+// }
+

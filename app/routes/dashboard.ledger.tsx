@@ -1,57 +1,75 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { useFetcher, useLoaderData, useSearchParams } from "@remix-run/react";
 import { ColumnDef } from "@tanstack/react-table";
-import { and, or, like, sql, getTableColumns, eq, desc } from "drizzle-orm";
+import { and, or, like, sql, getTableColumns, eq } from "drizzle-orm";
 import { DataTable } from "~/components/datatable";
 import FormSearch from "~/components/FormSearch";
 import { formatCurrency } from "~/components/InputCurrency";
 import { PaginationPage } from "~/components/pagination-page";
 import { db } from "~/drizzle/client.server";
-import { ledgerTable, productTable } from "~/drizzle/schema";
+import { ledgerTable } from "~/drizzle/schema";
 import { onlyStaff } from "~/lib/auth.server";
 import { sqlFilterBackend } from "~/lib/query.server";
 import { dateFormat } from "~/lib/time";
 import OpenDetail from "~/components/OpenDetail";
 import { ActionDelete } from "~/components/ActionDelete";
 import { Button } from "~/components/ui/button";
-import { Loader2, Sheet, Trash } from "lucide-react";
+import { Gamepad, Loader2, Sheet, ShieldPlus, Smartphone, TicketX, Trash, Wallet } from "lucide-react";
 import { useEffect } from "react";
 import * as XLSX from 'xlsx'
 import { pickKeys } from "./panel.pulsa";
 import { SQLiteColumn } from "drizzle-orm/sqlite-core";
 
+import MyFilter from "~/components/MyFilter";
+import { CHOICE_STATUS } from "~/lib/digiflazz";
+
 function hasKeyInJson(jsonColumn: SQLiteColumn, key: string) {
     return sql`json_extract(${jsonColumn}, $.${key}) IS NOT NULL`;
 }
 
-export async function loader(req: LoaderFunctionArgs) {
-    const user = await onlyStaff(req)
-    const url = new URL(req.request.url)
-    const mydb = db(req.context.cloudflare.env.DB)
-    const filter = sqlFilterBackend(url, 'created_at desc')
-    const search = url.searchParams
-    const mytable = ledgerTable
-    const allColumns = getTableColumns(mytable)
-    const searchableFields = [mytable.data]
 
-    const datakey = search.get("datakey")?.toString() || ''
+function hasKeysInJson(jsonColumn: SQLiteColumn, keys: string[]) {
+    if (!keys || keys.length === 0) {
+        return sql`1=1`; // no-op
+    }
+
+    return or(
+        ...keys.map((key) => {
+            const escapedKey = key.replace(/"/g, '""');
+            const jsonPath = `$."${escapedKey}"`;
+            return sql`json_extract(${jsonColumn}, ${jsonPath}) IS NOT NULL`;
+        })
+    );
+}
+
+export async function loader(req: LoaderFunctionArgs) {
+    const user = await onlyStaff(req);
+    const url = new URL(req.request.url);
+    const mydb = db(req.context.cloudflare.env.DB);
+    const filter = sqlFilterBackend(url, 'created_at desc');
+    const search = url.searchParams;
+    const mytable = ledgerTable;
+    const allColumns = getTableColumns(mytable);
+    const searchableFields = [mytable.data];
+
+    // Trim keys to remove whitespace and split correctly
+    const datakey = search.get("datakey")?.split(',').map(k => k.trim()) || [];
 
     const where = and(
-        and(
-            hasKeyInJson(ledgerTable.data, datakey).if(datakey),
-            or(...searchableFields.map((c) => like(c, `%${filter.search}%`)))?.if(filter.search)
-        )
-    )
+        hasKeysInJson(mytable.data, datakey),
+        or(...searchableFields.map((c) => like(c, `%${filter.search}%`)))?.if(filter.search)
+    );
+
+    const total = await mydb.select({
+        totalCount: sql<number>`COUNT(*)`.as("totalCount"),
+    }).from(mytable).where(where);
+
     const data = await mydb
         .select({ ...allColumns }).from(mytable)
         .where(where)
         .limit(filter.limit)
         .offset(filter.offset)
-        .orderBy(filter.ordering)
-
-    const total = await mydb.select({
-        totalCount: sql<number>`COUNT(*)`.as("totalCount"),
-    }).from(mytable).where(where)
+        .orderBy(filter.ordering);
 
     return {
         data: data,
@@ -62,7 +80,7 @@ export async function loader(req: LoaderFunctionArgs) {
             total: total[0].totalCount,
             pages: Math.ceil(total[0].totalCount / filter.limit),
         },
-    }
+    };
 }
 
 export async function action(req: ActionFunctionArgs) {
@@ -140,6 +158,13 @@ const collums: ColumnDef<TData>[] = [
 ]
 
 
+const CHOICE_TYPE_LEDGER = [
+    { icon: Smartphone, label: "Pulsa", value: 'pulsa' },
+    { icon: Gamepad, label: "Games", value: 'games' },
+    { icon: Wallet, label: "E-Money", value: 'emoney' },
+    { icon: ShieldPlus, label: "Top up", value: 'topup' },
+    { icon: TicketX, label: "Refund", value: 'refund_id' },
+]
 export default function DashboardLedger() {
     const loadData = useLoaderData<typeof loader>()
     const [params, setParams] = useSearchParams()
@@ -147,7 +172,7 @@ export default function DashboardLedger() {
     return (
         <div className="space-y-4 px-4 md:px-0">
             <div className="text-2xl font-bold">Ledger</div>
-            <FormSearch action={<>
+            <FormSearch filter={<MyFilter title="Data" options={CHOICE_TYPE_LEDGER} />} action={<>
                 <ButtonExport />
             </>} />
             <DataTable data={loadData.data} columns={collums} />
@@ -164,6 +189,7 @@ export default function DashboardLedger() {
         </div>
     )
 }
+
 
 function ButtonExport() {
     const fetcher = useFetcher<typeof loader>()

@@ -3,6 +3,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { db } from "~/drizzle/client.server";
 import { ledgerTable } from "~/drizzle/schema";
 import { onlyStaff } from "~/lib/auth.server";
+import { sumProfitUser } from "~/lib/ledger.server";
 import { sqlFilterBackend } from "~/lib/query.server";
 
 export async function loader(req: LoaderFunctionArgs) {
@@ -11,7 +12,15 @@ export async function loader(req: LoaderFunctionArgs) {
     const url = new URL(req.request.url)
     const filter = sqlFilterBackend(url)
     
-    const {key} = Object.fromEntries(url.searchParams)
+    const {key, type} = Object.fromEntries(url.searchParams)
+    
+    //profit
+    if(type==="profit"){
+        const {start, end} = Object.fromEntries(url.searchParams)
+        return Response.json({sum: await sumProfitUser(req.context.cloudflare.env, key, [start, end].map(Number))})
+    }
+
+    // saldo
     const where = and(
         eq(ledgerTable.key, key).if(key),
     )
@@ -21,5 +30,5 @@ export async function loader(req: LoaderFunctionArgs) {
         orderBy: desc(ledgerTable.created_at)
     })
     const saldo = data?.after || 0
-    return Response.json({saldo: saldo})
+    return Response.json({sum: saldo})
 }
