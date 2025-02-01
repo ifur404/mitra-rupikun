@@ -16,12 +16,14 @@ import { TFormPulsa } from "./panel.pulsa";
 import { TFormTopUp } from "./dashboard.user";
 import { TResponseTransaction, TWebhookData } from "~/lib/digiflazz";
 import { TFormEmoney } from "./panel.e-money";
+import { TFormPLN } from "./panel.pln";
 
 export type TDataLedger = {
   emoney?: TFormEmoney;
   games?: TFormGame;
   pulsa?: TFormPulsa;
   topup?: TFormTopUp;
+  pln?: TFormPLN;
   response?: TResponseTransaction;
   webhook?: TWebhookData;
   webhook_detail?: any;
@@ -36,7 +38,7 @@ export type TDataLedger = {
   refund_id?: string;
 }
 
-export const LIST_KEYS: (keyof TDataLedger)[] = ['pulsa', 'games', 'emoney']
+export const LIST_KEYS: (keyof TDataLedger)[] = ['pulsa', 'games', 'emoney','pln']
 
 export async function loader(req: LoaderFunctionArgs) {
   const user = await allowAny(req)

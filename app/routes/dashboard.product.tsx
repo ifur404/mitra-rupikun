@@ -126,14 +126,14 @@ export async function action(req: ActionFunctionArgs) {
             const category = formData.get("category")?.toString() as DigiCategory
             const product = await getPricelist(req.context.cloudflare.env, category, category)
 
-            const list_product = product.map(e => {
-                let p = e.price;
+            const list_product = product.filter(e=>e.category===category).map(e => {
+                let p = generatePrice(e.price || 0, 3000)
                 if(category==="Pulsa"){
                     p = generatePricePulsa(e.product_name, 3000)
-                } else if(category==="Games"){
-                    p = generatePriceGame(e.price || 0, 3000)
                 } else if(category==="E-Money"){
-                    p = generatePriceGame(e.price || 0, 1800)
+                    p = generatePrice(e.price || 0, 1800)
+                } else if(category==="PLN"){
+                    p = generatePrice(e.price || 0, 2500)
                 }
                 return {
                 code: e.buyer_sku_code,
@@ -156,7 +156,8 @@ export async function action(req: ActionFunctionArgs) {
                             price: e.price,
                             category,
                             data: e.data, 
-                            updated_at: new Date().getTime() 
+                            updated_at: new Date().getTime(),
+                            updated_by: user.id,
                         },
                     })
             })
@@ -177,7 +178,7 @@ function generatePricePulsa(input: string, additionalAmount: number): number {
     return finalPrice;
 }
 
-function generatePriceGame(input: number, additionalAmount: number = 3000): number {
+function generatePrice(input: number, additionalAmount: number = 3000): number {
     const basePrice = input + additionalAmount;
     return Math.ceil(basePrice / 500) * 500; // Round up to the nearest 500
  }

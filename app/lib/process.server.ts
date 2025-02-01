@@ -7,7 +7,7 @@ import { TAuth } from "./auth.server";
 import { Digiflazz } from "./digiflazz";
 
 
-export async function processDigi(env: Env, user: TAuth, form: any, key_form: 'pulsa' | 'emoney' | 'games'="pulsa") {
+export async function processDigi(env: Env, user: TAuth, form: any, key_form: 'pulsa' | 'emoney' | 'games' | 'pln' ="pulsa") {
     const { DIGI_USERNAME, DIGI_APIKEY, WEBHOOK_URL, NODE_ENV, DB } = env;
     const mydb = db(DB);
     const product = await mydb.query.productTable.findFirst({
