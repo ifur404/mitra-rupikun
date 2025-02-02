@@ -34,17 +34,12 @@ export async function loader(req: LoaderFunctionArgs) {
     const from = Number(search.get("from"))
     const to = Number(search.get("to"))
 
-    const conditions = [
-        eq(mytable.key, user_id), 
-        between(mytable.created_at, from, to), 
+    const where = and(
+        eq(mytable.key, user_id as any),
+        between(mytable.created_at, from, to),
         hasKeysInJson(mytable.data, datakey),
-    ];
-    
-    if (filter.search) {
-        conditions.push(or(...searchableFields.map((c) => like(c, `%${filter.search}%`))));
-    }
-    
-    const where = and(...conditions);
+        or(...searchableFields.map((c) => like(c, `%${filter.search}%`)))?.if(filter.search)
+    );
     const data = await mydb
         .select({ ...allColumns }).from(mytable)
         .where(where)
@@ -101,7 +96,7 @@ export default function dashboardreportuser() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-8 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                 <Card >
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total</CardTitle>
@@ -112,7 +107,7 @@ export default function dashboardreportuser() {
                     </CardContent>
                 </Card>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-8 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                 {CHOICE_TYPE_LEDGER.filter(e => e.isService).map((e, i) => {
                     const cal = calculate(loaderData.data.filter((ee: any) => ee.data[e.value]))
                     return <Card key={e.value}>
