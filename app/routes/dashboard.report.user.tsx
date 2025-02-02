@@ -80,7 +80,7 @@ export default function dashboardreportuser() {
     const cal = calculate()
 
     useEffect(() => {
-        setParams({user_id: user?.value || '', from: range?.from?.getTime().toString() || '', to: range?.to?.getTime().toString() || ''})
+        setParams({limit:"10000",user_id: user?.value || '', from: range?.from?.getTime().toString() || '', to: range?.to?.getTime().toString() || ''})
     }, [user, range])
 
     return (
