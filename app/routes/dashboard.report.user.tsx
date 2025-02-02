@@ -67,8 +67,8 @@ export default function dashboardreportuser() {
         to: new Date(),
     })
 
-    function calculate(key: any) {
-        const d = loaderData.data.filter((e: any) => e.data[key] ? true : false)
+    function calculate(key?: any) {
+        const d = key ? loaderData.data.filter((e: any) => e.data[key] ? true : false) : loaderData.data
         const totalSales = d.reduce((a, b) => a + (b.data?.calculate?.price_sell || 0), 0)
         const totalProfit = d.reduce((a, b) => a + (b.data?.calculate?.profit || 0), 0)
         return {
@@ -77,7 +77,7 @@ export default function dashboardreportuser() {
         }
     }
 
-    const cal = calculate(loaderData.data)
+    const cal = calculate()
 
     useEffect(() => {
         setParams({user_id: user?.value || '', from: range?.from?.getTime().toString() || '', to: range?.to?.getTime().toString() || ''})
@@ -109,7 +109,7 @@ export default function dashboardreportuser() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                 {CHOICE_TYPE_LEDGER.filter(e => e.isService).map((e, i) => {
-                    const cal = calculate(loaderData.data.filter((ee: any) => ee.data[e.value]))
+                    const cal = calculate(e.value)
                     return <Card key={e.value}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">{e.label}</CardTitle>
