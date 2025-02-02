@@ -1,5 +1,5 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { TPriceList } from "~/lib/digiflazz";
+import { TPriceList } from "~/lib/digiflazz.server";
 import { TDataLedger } from "~/routes/panel.transaksi._index";
 
 export const userTable = sqliteTable('user', {

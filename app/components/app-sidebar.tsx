@@ -36,7 +36,6 @@ const data = {
       title: "Ledger",
       url: "/dashboard/ledger",
     },
-   
     {
       title: "Digiflazz",
       url: "#",
@@ -49,6 +48,17 @@ const data = {
         {
           title: "Cache",
           url: "/dashboard/digiflazz/cache",
+          isActive: false
+        },
+      ],
+    },
+    {
+      title: "Report",
+      url: "#",
+      items: [
+        {
+          title: "User",
+          url: "/dashboard/report/user",
           isActive: false
         },
       ],

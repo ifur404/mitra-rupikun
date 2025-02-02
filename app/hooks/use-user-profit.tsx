@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
+import { DateRange } from "react-day-picker";
 
-export default function useUserProfit(user_id: number, range: number[] = []) {
+export default function useUserProfit(user_id: number, range: DateRange | undefined) {
   const [sum, setSum] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
   const getData = useCallback(
-    async (requestedRange: number[] = range, signal?: AbortSignal) => {
+    async (requestedRange: DateRange | undefined = range, signal?: AbortSignal) => {
       if (!user_id) return;
 
       setIsLoading(true);
@@ -16,9 +17,9 @@ export default function useUserProfit(user_id: number, range: number[] = []) {
           type: "profit",
         });
 
-        if (requestedRange.length >= 2) {
-          params.append("start", requestedRange[0].toString());
-          params.append("end", requestedRange[1].toString());
+        if (requestedRange?.from && requestedRange.to) {
+          params.append("start", requestedRange.from.toDateString());
+          params.append("end", requestedRange.to.toDateString());
         }
 
         const response = await fetch(`/api/ledger/?${params.toString()}`, {

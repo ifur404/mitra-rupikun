@@ -3,7 +3,7 @@ import { HeaderBack } from "./panel._index";
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
 import { Label } from "~/components/ui/label";
 import { allowAny } from "~/lib/auth.server";
-import { DigiCategory, Digiflazz, TPriceList } from "~/lib/digiflazz";
+import { DigiCategory, Digiflazz, TPriceList } from "~/lib/digiflazz.server";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Dispatch, FormEvent, ReactNode, SetStateAction, useEffect, useMemo, useState } from "react";
 import { useFetcher, useLoaderData } from "@remix-run/react";
@@ -39,27 +39,6 @@ function identifyOperator(phoneNumber: string) {
     return null;
 }
 
-export async function getPricelist(env: Env, category: DigiCategory = "Pulsa", cache_key: string = CACHE_KEYS.PULSA) {
-    const { DIGI_USERNAME, DIGI_APIKEY } = env
-    const cache = env.KV
-    const cache_data = await cache.get(cache_key)
-    if (cache_data) {
-        return JSON.parse(cache_data) as TPriceList[]
-    }
-
-    const digiflazz = new Digiflazz(DIGI_USERNAME, DIGI_APIKEY)
-    const product = await digiflazz.priceList({
-        category: category,
-    })
-    const p_sort = product.sort((a, b) => a.price - b.price)
-    if (product.length > 0) {
-        await cache.put(cache_key, JSON.stringify(p_sort), {
-            expirationTtl: 60
-        })
-        return p_sort
-    }
-    return []
-}
 
 
 export async function loader(req: LoaderFunctionArgs) {

@@ -5,7 +5,7 @@ import { DataTable } from "~/components/datatable";
 import { formatCurrency } from "~/components/InputCurrency";
 import { Button } from "~/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { TPriceList } from "~/lib/digiflazz";
+import { TPriceList } from "~/lib/digiflazz.server";
 import sessionCookie, { TAuth } from "~/lib/auth.server";
 import { getListDB } from "~/lib/ledger.server";
 

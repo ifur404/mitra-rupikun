@@ -71,6 +71,16 @@ const CommandEmpty = React.forwardRef<
 >((props, ref) => (
   <CommandPrimitive.Empty
     ref={ref}
+    className="py-2 text-center text-sm"
+    {...props}
+  />
+))
+const CommandLoading = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Loading>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Loading>
+>((props, ref) => (
+  <CommandPrimitive.Loading
+    ref={ref}
     className="py-6 text-center text-sm"
     {...props}
   />
@@ -144,6 +154,7 @@ export {
   CommandInput,
   CommandList,
   CommandEmpty,
+  CommandLoading,
   CommandGroup,
   CommandItem,
   CommandShortcut,

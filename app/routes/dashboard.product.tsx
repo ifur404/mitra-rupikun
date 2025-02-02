@@ -17,8 +17,7 @@ import { productTable } from "~/drizzle/schema";
 import { onlyStaff } from "~/lib/auth.server";
 import { sqlFilterBackend } from "~/lib/query.server";
 import { calculateMinutes, dateFormat, isTimeNotWithinRange } from "~/lib/time";
-import { getPricelist } from "./panel.pulsa";
-import { DigiCategory, TPriceList } from "~/lib/digiflazz";
+import { DigiCategory, getPricelist, TPriceList } from "~/lib/digiflazz.server";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { OPTION_SERVICES } from "./panel._index";
 
@@ -123,7 +122,7 @@ export async function action(req: ActionFunctionArgs) {
         }
 
         if (intent === "SYNC_PRODUCT") {
-            const category = formData.get("category")?.toString() as DigiCategory
+            const category = formData.get("category")?.toString().trim() as DigiCategory
             const product = await getPricelist(req.context.cloudflare.env, category, category)
 
             const list_product = product.filter(e=>e.category===category).map(e => {
@@ -144,26 +143,27 @@ export async function action(req: ActionFunctionArgs) {
                 created_by: user.id,
                 updated_by: user.id,
             }})
-
-            list_product.forEach(async (e, i) => {
-                await mydb
+            await Promise.all(
+                list_product.map(async (e) => {
+                  return mydb
                     .insert(productTable)
                     .values(e)
                     .onConflictDoUpdate({
-                        target: productTable.code,
-                        set: { 
-                            name: e.name, 
-                            price: e.price,
-                            category,
-                            data: e.data, 
-                            updated_at: new Date().getTime(),
-                            updated_by: user.id,
-                        },
-                    })
-            })
+                      target: productTable.code,
+                      set: { 
+                        name: e.name, 
+                        price: e.price,
+                        category,
+                        data: e.data, 
+                        updated_at: Date.now(),
+                        updated_by: user.id,
+                      },
+                    });
+                })
+              );
 
             return {
-                success: true
+                success: true,
             }
         }
     } catch (error) {

@@ -4,7 +4,7 @@ import { db } from "~/drizzle/client.server";
 import { productTable, ledgerTable } from "~/drizzle/schema";
 import { calculateProfit } from "~/routes/panel.pulsa";
 import { TAuth } from "./auth.server";
-import { Digiflazz } from "./digiflazz";
+import { Digiflazz } from "./digiflazz.server";
 
 
 export async function processDigi(env: Env, user: TAuth, form: any, key_form: 'pulsa' | 'emoney' | 'games' | 'pln' ="pulsa") {

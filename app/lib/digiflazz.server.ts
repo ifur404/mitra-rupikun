@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { CACHE_KEYS } from '~/data/cache';
 
 export class Digiflazz {
     url: string;
@@ -172,3 +173,25 @@ export type TWebhookData = {
 }
 
 export type DigiCategory = "Pulsa" | "Games" | "E-Money" | "PLN"
+
+export async function getPricelist(env: Env, category: DigiCategory = "Pulsa", cache_key: string = CACHE_KEYS.PULSA) {
+    const { DIGI_USERNAME, DIGI_APIKEY } = env
+    const cache = env.KV
+    const cache_data = await cache.get(cache_key)
+    if (cache_data) {
+        return JSON.parse(cache_data) as TPriceList[]
+    }
+
+    const digiflazz = new Digiflazz(DIGI_USERNAME, DIGI_APIKEY)
+    const product = await digiflazz.priceList({
+        category: category,
+    })
+    const p_sort = product.sort((a, b) => a.price - b.price)
+    if (product.length > 0) {
+        await cache.put(cache_key, JSON.stringify(p_sort), {
+            expirationTtl: 60
+        })
+        return p_sort
+    }
+    return []
+}

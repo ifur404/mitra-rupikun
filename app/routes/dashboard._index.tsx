@@ -3,7 +3,7 @@ import { useLoaderData } from "@remix-run/react";
 import { Wallet } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { onlyStaff } from "~/lib/auth.server";
-import { Digiflazz } from "~/lib/digiflazz";
+import { Digiflazz } from "~/lib/digiflazz.server";
 import { sumProfitUser, sumTotalMutation } from "~/lib/ledger.server";
 
 export async function loader(req: LoaderFunctionArgs) {

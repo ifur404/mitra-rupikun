@@ -1,14 +1,12 @@
-import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { ActionFunctionArgs } from "@remix-run/cloudflare";
 import { db } from "~/drizzle/client.server";
-import { ledgerTable, productTable, webhookTable } from "~/drizzle/schema";
-import { TWebhookData } from "~/lib/digiflazz";
-import crypto from 'node:crypto';
+import { ledgerTable, webhookTable } from "~/drizzle/schema";
+import { TWebhookData } from "~/lib/digiflazz.server";
 import { eq } from "drizzle-orm";
-import { CACHE_KEYS } from "~/data/cache";
 import { emitter } from "~/lib/emitter.server";
 import { sendIpurNotification } from "~/lib/telegram.server";
 import { refundTransaction } from "~/lib/ledger.server";
-
+const crypto = globalThis.crypto;
 // function CheckSignature(body: string, sign: string, secret: string) {
 //     const signature = crypto
 //         .createHmac("sha1", secret)
@@ -112,3 +110,6 @@ export async function action(req: ActionFunctionArgs) {
     return Response.json({ status: "success", message: "Webhook received" });
 }
 
+export default function WebhookIndex(){
+    return <div>Work!</div>
+}

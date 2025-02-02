@@ -14,21 +14,15 @@ import { dateFormat } from "~/lib/time";
 import OpenDetail from "~/components/OpenDetail";
 import { ActionDelete } from "~/components/ActionDelete";
 import { Button } from "~/components/ui/button";
-import { Gamepad, Loader2, Sheet, ShieldPlus, Smartphone, TicketX, Trash, Wallet } from "lucide-react";
+import { BellElectric, Gamepad, Loader2, Sheet, ShieldPlus, Smartphone, TicketX, Trash, Wallet } from "lucide-react";
 import { useEffect } from "react";
 import * as XLSX from 'xlsx'
 import { pickKeys } from "./panel.pulsa";
 import { SQLiteColumn } from "drizzle-orm/sqlite-core";
 
 import MyFilter from "~/components/MyFilter";
-import { CHOICE_STATUS } from "~/lib/digiflazz";
 
-function hasKeyInJson(jsonColumn: SQLiteColumn, key: string) {
-    return sql`json_extract(${jsonColumn}, $.${key}) IS NOT NULL`;
-}
-
-
-function hasKeysInJson(jsonColumn: SQLiteColumn, keys: string[]) {
+export function hasKeysInJson(jsonColumn: SQLiteColumn, keys: string[]) {
     if (!keys || keys.length === 0) {
         return sql`1=1`; // no-op
     }
@@ -158,10 +152,11 @@ const collums: ColumnDef<TData>[] = [
 ]
 
 
-const CHOICE_TYPE_LEDGER = [
-    { icon: Smartphone, label: "Pulsa", value: 'pulsa' },
-    { icon: Gamepad, label: "Games", value: 'games' },
-    { icon: Wallet, label: "E-Money", value: 'emoney' },
+export const CHOICE_TYPE_LEDGER = [
+    { icon: Smartphone, label: "Pulsa", value: 'pulsa', isService:true },
+    { icon: Gamepad, label: "Games", value: 'games', isService:true },
+    { icon: Wallet, label: "E-Money", value: 'emoney', isService:true },
+    { icon: BellElectric, label: "PLN", value: 'pln', isService:true },
     { icon: ShieldPlus, label: "Top up", value: 'topup' },
     { icon: TicketX, label: "Refund", value: 'refund_id' },
 ]

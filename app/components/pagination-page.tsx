@@ -7,7 +7,7 @@ export type PaginationPage<T> = Pick<TData<T>, "page"> & {
 }
 
 export function PaginationPage<T>({ page, onChangePage }: PaginationPage<T>) {
-    if(page.total===0) return null
+    if (page.total === 0) return null
 
     return <Pagination>
         <PaginationContent>
@@ -37,7 +37,7 @@ export function PaginationPage<T>({ page, onChangePage }: PaginationPage<T>) {
                     <PaginationItem key={i}>
                         <PaginationLink
                             onClick={() => {
-                                if(currentPage === i + 1) return 
+                                if (currentPage === i + 1) return
                                 onChangePage(i + 1);
                             }}
                             className={currentPage === i + 1 ? "cursor-not-allowed border" : "cursor-pointer"}
@@ -58,6 +58,42 @@ export function PaginationPage<T>({ page, onChangePage }: PaginationPage<T>) {
                     Next
                 </PaginationNext>
             </PaginationItem>
+        </PaginationContent>
+    </Pagination>
+}
+
+export function PaginationSimple<T>({ page, onChangePage }: PaginationPage<T>) {
+    if (page.total === 0) return null
+    return <Pagination className="w-full">
+        <PaginationContent className="flex justify-between gap-2">
+            {page.page === 1 ? null : (
+                <PaginationItem>
+                    <PaginationPrevious
+                        className={cn(page.page === 1 ? "cursor-not-allowed" : "cursor-pointer", "text-xs")}
+                        onClick={() => {
+                            if (page.page === 1) return
+                            onChangePage(page.page - 1)
+                        }}
+                    >
+                        Previous
+                    </PaginationPrevious>
+                </PaginationItem>
+            )}
+            {page.page === page.pages ? null : (
+
+                <PaginationItem>
+                    <PaginationNext
+                        className="text-xs cursor-pointer"
+                        onClick={() => {
+                            if (page.page === page.pages) return
+                            onChangePage(page.page + 1)
+                        }}
+                    >
+                        Next
+                    </PaginationNext>
+                </PaginationItem>
+            )}
+
         </PaginationContent>
     </Pagination>
 }

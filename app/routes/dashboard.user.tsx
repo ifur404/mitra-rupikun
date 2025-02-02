@@ -4,8 +4,10 @@ import { ColumnDef } from "@tanstack/react-table"
 import { and, desc, eq, getTableColumns, like, or, sql } from "drizzle-orm"
 import { ChevronDown, Edit } from "lucide-react"
 import { useEffect, useState } from "react"
+import { DateRange } from "react-day-picker"
 import { toast } from "sonner"
 import { DataTable } from "~/components/datatable"
+import { DatePickerWithRange } from "~/components/date-pick-range"
 import FormSearch from "~/components/FormSearch"
 import InputCurrency, { convertCurrencyToDecimal, formatCurrency } from "~/components/InputCurrency"
 import { PaginationPage } from "~/components/pagination-page"
@@ -21,6 +23,7 @@ import useUserProfit from "~/hooks/use-user-profit"
 import { onlyStaff } from "~/lib/auth.server"
 import { sqlFilterBackend } from "~/lib/query.server"
 import { dateFormat } from "~/lib/time"
+import { addDays, format } from "date-fns"
 
 export async function loader(req: LoaderFunctionArgs) {
   const user = await onlyStaff(req)
@@ -137,6 +140,11 @@ const collums: ColumnDef<TData>[] = [
     cell: ({ row: { original } }) => <ShowSaldo data={original} />,
     header: "Saldo"
   },
+  // {
+  //   id: "profit",
+  //   cell: ({ row: { original } }) => <ShowProfit data={original} />,
+  //   header: "Profit"
+  // },
   {
     id: "created_at",
     accessorFn: (d) => dateFormat(new Date(d.created_at || 0)),
@@ -235,7 +243,10 @@ function ShowSaldo({ data }: { data: TData }) {
 }
 
 // function ShowProfit({ data }: { data: TData }) {
-//   const [range, setRange] = useState<number[]>([])
+//   const [range, setRange] = useState<DateRange | undefined>({
+//     from: new Date(),
+//     to: addDays(new Date(), 7),
+//   })
 //   const profit = useUserProfit(data.id, range)
 //   const [show, setShow] = useState(false)
 //   const balance = profit.sum
@@ -259,7 +270,7 @@ function ShowSaldo({ data }: { data: TData }) {
 //         <DialogDescription>Jumlah Profit dari user</DialogDescription>
 //       </DialogHeader>
 //       <div>
-
+//         <DatePickerWithRange value={range} setValue={setRange} />
 //       </div>
 //     </DialogContent>
 //   </Dialog>
