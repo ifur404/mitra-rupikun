@@ -68,7 +68,7 @@ export default function dashboardreportuser() {
     })
 
     function calculate(key?: any) {
-        const d = key ? loaderData.data.filter((e: any) => e.data[key] ? true : false) : loaderData.data
+        const d = (key ? loaderData.data.filter((e: any) => e.data[key] ? true : false) : loaderData.data).filter(e=>e.data?.webhook?.status==="Sukses")
         const totalSales = d.reduce((a, b) => a + (b.data?.calculate?.price_sell || 0), 0)
         const totalProfit = d.reduce((a, b) => a + (b.data?.calculate?.profit || 0), 0)
         return {
