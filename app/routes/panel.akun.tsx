@@ -1,18 +1,15 @@
-import { useFetcher, useLoaderData, useOutletContext } from "@remix-run/react"
-import { allowAny, TAuth } from "~/lib/auth.server"
+import { useFetcher, useLoaderData } from "@remix-run/react"
+import { allowAny } from "~/lib/auth.server"
 import { BottonNav, HeaderBack } from "./panel._index"
 import { ShowAccount } from "~/components/app-sidebar"
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/cloudflare"
-import { Card, CardContent } from "~/components/ui/card"
-import { Bell, MessageCircle } from "lucide-react"
-import InputCurrency from "~/components/InputCurrency"
-import { Input } from "~/components/ui/input"
+import { MessageCircle } from "lucide-react"
 import { Button } from "~/components/ui/button"
 import { db } from "~/drizzle/client.server"
 import { eq } from "drizzle-orm"
 import { TTelegramNotif, userTable } from "~/drizzle/schema"
 import { HashGenerator } from "~/lib/hash"
-import { checkMessage, sendMessage, setTelegramLastID } from "~/lib/telegram.server"
+import { checkMessage, getTelegramLastID, sendMessage, setTelegramLastID } from "~/lib/telegram.server"
 import { Switch } from "~/components/ui/switch"
 import { useEffect } from "react"
 import { toast } from "sonner"
@@ -31,10 +28,8 @@ export async function action(req: ActionFunctionArgs) {
     }
     if (intent === "cek") {
         const user_id = formData.get("user_id")
-        const messages = await checkMessage(req.context.cloudflare.env.TELEGRAM_TOKEN)
-        const lastElement = messages[messages.length - 1];
-        await setTelegramLastID(req.context.cloudflare.env, lastElement.update_id.toString())
-
+        const lastupdateID = await getTelegramLastID(req.context.cloudflare.env)
+        const messages = await checkMessage(req.context.cloudflare.env.TELEGRAM_TOKEN, lastupdateID)
         const find = messages.find(e => e.message?.text === user_id)
         if (!find) {
             throw new Error("Tidak ada message dengan kode tersebut")
