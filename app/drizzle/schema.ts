@@ -2,6 +2,22 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { TPriceList } from "~/lib/digiflazz.server";
 import { TDataLedger } from "~/routes/panel.transaksi._index";
 
+export type TService = {
+    code: string;
+    name: string;
+    isActive: boolean;
+    data?: any;
+}
+
+export type TTelegramNotif = {
+    username: string;
+    user_id: number;
+    first_name: string;
+    hash_id: string;
+    services: TService[]
+    created_at: number;
+}
+
 export const userTable = sqliteTable('user', {
     id: integer().primaryKey(),
     name: text(),
@@ -12,6 +28,7 @@ export const userTable = sqliteTable('user', {
     password: text(),
     picture: text(),
     phone_number: text(),
+    telegram: text({mode: 'json'}).$type<TTelegramNotif>(),
     created_at: integer().$default(() => new Date().getTime()),
     updated_at: integer().$default(() => new Date().getTime()),
 });
