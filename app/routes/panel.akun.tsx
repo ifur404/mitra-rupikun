@@ -32,11 +32,15 @@ export async function action(req: ActionFunctionArgs) {
         const messages = await checkMessage(req.context.cloudflare.env.TELEGRAM_TOKEN, lastupdateID)
         const find = messages.find(e => e.message?.text === user_id)
         if (!find) {
-            throw new Error("Tidak ada message dengan kode tersebut")
+            return {
+                error: "Tidak ada message dengan kode tersebut"
+            }
         }
         const hash_id = new HashGenerator(req.context.cloudflare.env.SESSION_SECRETS).createHash(user.id)
         if (find.message?.text !== hash_id) {
-            throw new Error("Hash tidak cocok")
+            return {
+                error: "Hash tidak cocok"
+            }
         }
 
         const telegram: TTelegramNotif = {
@@ -75,7 +79,9 @@ export async function action(req: ActionFunctionArgs) {
             where: eq(userTable.id, user.id)
         })
         if (!userdb?.telegram) {
-            throw new Error("Telegram belum disiapkan")
+            return {
+                error: "Telegram belum disiapkan"
+            }
         }
         const message = `Telegram telah dihapus dari akun ${userdb.name}`
         await sendMessage(
@@ -102,9 +108,11 @@ export async function action(req: ActionFunctionArgs) {
         }
 
         await mydb.update(userTable).set({
-            telegram: {...userdb.telegram, services: userdb.telegram.services.map(e=> {
-                return e.code===code ? {...e, isActive: value==="on" ? true : false} : e
-            })}
+            telegram: {
+                ...userdb.telegram, services: userdb.telegram.services.map(e => {
+                    return e.code === code ? { ...e, isActive: value === "on" ? true : false } : e
+                })
+            }
         }).where(eq(userTable.id, user.id))
         return {
             success: true
@@ -167,9 +175,13 @@ function NotifikasiTelegram() {
     useEffect(() => {
         if (fetcher.state === "idle" && fetcher.data) {
             // Check if the action was successful
-            if (fetcher.data.success) {
+            if (fetcher.data?.success) {
                 toast.success("Success", {
                     description: "Your request was successful!",
+                });
+            }else if (fetcher.data?.error) {
+                toast.success("Error", {
+                    description: fetcher.data.error,
                 });
             }
         }
@@ -228,7 +240,7 @@ function NotifikasiTelegram() {
                             {telegram.services.map(e => {
                                 return <div className="flex justify-between gap-2 w-full" key={e.code}>
                                     <div>{e.name}</div>
-                                    <div><Switch name={e.code} defaultChecked={e.isActive} onCheckedChange={(ee)=> {
+                                    <div><Switch name={e.code} defaultChecked={e.isActive} onCheckedChange={(ee) => {
                                         const formData = new FormData()
                                         formData.append("intent", "service")
                                         formData.append("code", e.code)
@@ -236,7 +248,7 @@ function NotifikasiTelegram() {
                                         fetcher.submit(formData, {
                                             method: "POST"
                                         })
-                                    }}/></div>
+                                    }} /></div>
                                 </div>
                             })}
                         </div>
@@ -260,8 +272,6 @@ function NotifikasiTelegram() {
                             }}>Hapus</Button>
                         </div>
                     </div>}
-                {/* <Input name="phone_number" placeholder="ex: 082122012951" /> */}
-                {/* <Button>Submit</Button> */}
             </div>
         </div>
     </div>
