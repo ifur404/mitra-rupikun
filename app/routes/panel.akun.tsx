@@ -30,6 +30,10 @@ export async function action(req: ActionFunctionArgs) {
         const user_id = formData.get("user_id")
         const lastupdateID = await getTelegramLastID(req.context.cloudflare.env)
         const messages = await checkMessage(req.context.cloudflare.env.TELEGRAM_TOKEN, lastupdateID)
+        if(messages.length > 0 ){
+            const lastElement = messages[messages.length - 1];
+            await setTelegramLastID(req.context.cloudflare.env, lastElement.update_id.toString())
+        }
         const find = messages.find(e => e.message?.text === user_id)
         if (!find) {
             return {
@@ -180,7 +184,7 @@ function NotifikasiTelegram() {
                     description: "Your request was successful!",
                 });
             }else if (fetcher.data?.error) {
-                toast.success("Error", {
+                toast.error("Error", {
                     description: fetcher.data.error,
                 });
             }

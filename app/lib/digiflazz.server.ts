@@ -32,6 +32,9 @@ export class Digiflazz {
                 "Content-Type": "application/json",
             }
         })
+
+        // console.log(await req.text())
+        // return 0
         const data = await req.json() as { data: { deposit: number } }
         if (!(process.env.NODE_ENV === 'production')) {
             console.log(data)

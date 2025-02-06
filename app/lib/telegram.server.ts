@@ -61,7 +61,6 @@ export async function checkMessage(token: string, lastupdateID=0): Promise<Teleg
     }
 
     const data: TelegramResponse = await response.json();
-
     if (!data.ok) {
       throw new Error("Telegram API returned an error");
     }
