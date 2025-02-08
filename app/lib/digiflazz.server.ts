@@ -8,6 +8,7 @@ export class Digiflazz {
 
     constructor(username: string, apikey: string) {
         this.url = 'https://digi.rupikun.com/v1/'
+        // this.url = 'https://api.digiflazz.com/v1/'
         this.username = username
         this.apikey = apikey
     }
@@ -19,29 +20,40 @@ export class Digiflazz {
     getSign(cmd: string) {
         return this.generateMD5(`${this.username}${this.apikey}${cmd}`)
     }
-
     async getSaldo(): Promise<number> {
-        const req = await fetch(this.url + "cek-saldo", {
-            method: "POST",
-            body: JSON.stringify({
-                sign: this.getSign("depo"),
-                cmd: "deposit",
-                username: this.username
-            }),
-            headers: {
-                "Content-Type": "application/json",
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
+    
+        try {
+            const req = await fetch(this.url + "cek-saldo", {
+                method: "POST",
+                body: JSON.stringify({
+                    sign: this.getSign("depo"),
+                    cmd: "deposit",
+                    username: this.username,
+                }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                signal: controller.signal,
+            });
+    
+            clearTimeout(timeoutId);
+    
+            const data = (await req.json()) as { data: { deposit: number } };
+            if (!(process.env.NODE_ENV === "production")) {
+                console.log(data);
             }
-        })
-
-        // console.log(await req.text())
-        // return 0
-        const data = await req.json() as { data: { deposit: number } }
-        if (!(process.env.NODE_ENV === 'production')) {
-            console.log(data)
+            return data.data.deposit;
+        } catch (error) {
+            clearTimeout(timeoutId);
+            if (error instanceof Error && error.name === "AbortError") {
+                throw new Error("Request timeout after 10 seconds");
+            }
+            throw error;
         }
-        return data.data.deposit
     }
-
+    
     async priceList({ category }: { category: DigiCategory }) {
         const req = await fetch(this.url + "price-list", {
             method: "POST",

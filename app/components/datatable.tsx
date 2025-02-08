@@ -50,13 +50,13 @@ export function DataTable({ data = [], columns = [] }: { data: any[]; columns: C
         const p = new URLSearchParams(prev)
         p.set("ordering", orderingValue)
         return p
-      })
+      }, { replace: true })
     } else {
       setParams((prev) => {
         const p = new URLSearchParams(prev)
         p.delete("ordering")
         return p
-      })
+      }, { replace: true })
     }
   }, [sorting])
 
