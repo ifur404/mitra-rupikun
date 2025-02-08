@@ -210,7 +210,7 @@ function Footer() {
           <Link to="/" className="text-2xl font-bold">
             Mitra
           </Link>
-          <p className="text-sm mt-2">© 2023 Mitra. All rights reserved.</p>
+          <p className="text-sm mt-2">©{new Date().getFullYear()} Mitra. All rights reserved.</p>
         </div>
         <nav className="flex flex-wrap justify-center md:justify-end space-x-4">
           <Link to="/tentang-kami" className="hover:text-primary">

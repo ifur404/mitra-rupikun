@@ -103,7 +103,7 @@ export default function dashboardreportuser() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{formatCurrency(cal.totalSales.toString())}</div>
-                        <div className="text-sm">{formatCurrency(cal.totalProfit.toString())}</div>
+                        <div className="text-sm text-green-500">{formatCurrency(cal.totalProfit.toString())} </div>
                     </CardContent>
                 </Card>
             </div>
