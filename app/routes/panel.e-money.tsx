@@ -14,7 +14,8 @@ import { processDigi } from "~/lib/process.server";
 const OPTION_EMONEY = [
     { label: "Dana", value: "Dana", },
     { label: "Ovo", value: "Ovo", },
-    { label: "Go Pay", value: "Go Pay", },
+    { label: "GoPay", value: "Go Pay", },
+    { label: "SHOPEE PAY", value: "SHOPEE PAY", },
 ];
 
 const DIGIFLAZZ_KEY = "E-Money"
