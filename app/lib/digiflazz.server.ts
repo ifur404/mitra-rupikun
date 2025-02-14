@@ -23,7 +23,6 @@ export class Digiflazz {
     async getSaldo(): Promise<number> {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
-    
         try {
             const req = await fetch(this.url + "cek-saldo", {
                 method: "POST",
@@ -34,26 +33,31 @@ export class Digiflazz {
                 }),
                 headers: {
                     "Content-Type": "application/json",
+                    "Accept": "application/json"
                 },
-                signal: controller.signal,
+                // signal: controller.signal,
             });
-    
+            // const text = await req.text();
+            // console.log(text)
+            // return 0
+
             clearTimeout(timeoutId);
-    
             const data = (await req.json()) as { data: { deposit: number } };
             if (!(process.env.NODE_ENV === "production")) {
                 console.log(data);
             }
             return data.data.deposit;
         } catch (error) {
+            console.log(error)
             clearTimeout(timeoutId);
             if (error instanceof Error && error.name === "AbortError") {
                 throw new Error("Request timeout after 10 seconds");
             }
-            throw error;
+            return 0
+            // throw error;
         }
     }
-    
+
     async priceList({ category }: { category: DigiCategory }) {
         const req = await fetch(this.url + "price-list", {
             method: "POST",
@@ -65,6 +69,7 @@ export class Digiflazz {
             }),
             headers: {
                 "Content-Type": "application/json",
+                "Accept": "application/json"
             }
         })
         const data = await req.json() as { data: TPriceList[] }
@@ -79,25 +84,27 @@ export class Digiflazz {
             method: "POST",
             body: JSON.stringify(body),
             headers: {
+
                 "Content-Type": "application/json",
+                "Accept": "application/json"
             }
         })
         const data = await req.json() as { data: TResponseTransaction }
         return data.data
     }
-    
+
 
     async processTransactionPulsa({
         sku,
         customer_no,
         webhook_url,
-        isProd=false,
-    }:{
-        sku:string;
+        isProd = false,
+    }: {
+        sku: string;
         customer_no: string;
         webhook_url: string;
         isProd: boolean
-    }){
+    }) {
         const ref_id = crypto.randomUUID()
         let payload: TRequestTransaction = {
             username: this.username,
@@ -173,18 +180,18 @@ export const CHOICE_STATUS = [
 
 
 export type TWebhookData = {
-  trx_id: string;
-  ref_id: string;
-  customer_no: string;
-  buyer_sku_code: string;
-  message: string;
-  status: string;
-  rc: string;
-  buyer_last_saldo: number;
-  sn: string;
-  price: number;
-  tele: string;
-  wa: string;
+    trx_id: string;
+    ref_id: string;
+    customer_no: string;
+    buyer_sku_code: string;
+    message: string;
+    status: string;
+    rc: string;
+    buyer_last_saldo: number;
+    sn: string;
+    price: number;
+    tele: string;
+    wa: string;
 }
 
 export type DigiCategory = "Pulsa" | "Games" | "E-Money" | "PLN"
