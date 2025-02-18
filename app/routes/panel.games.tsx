@@ -13,6 +13,7 @@ import { Button } from "~/components/ui/button";
 import { FileQuestion } from "lucide-react";
 import { productTable } from "~/drizzle/schema";
 import { getListDB } from "~/lib/ledger.server";
+import { formatCurrency } from "~/components/InputCurrency";
 
 
 export async function loader(req: LoaderFunctionArgs) {
@@ -120,7 +121,7 @@ export default function panelgame() {
                 <input name="intent" value="intent" hidden readOnly />
                 <input name="json" value={JSON.stringify(form)} hidden readOnly />
 
-                {Object.entries(pickKeys(form.product || {}, ['name', 'code', 'price'] as any)).map(([key, value]) => (
+                {Object.entries(pickKeys(form.product || {}, ['name', 'code'] as any)).map(([key, value]) => (
                     <div key={key} className="flex justify-between border-b border-gray-200 py-2">
                         <span className="text-gray-600">{key.split("_").join(" ")}</span>
                         <span className="text-gray-900 font-medium">
@@ -128,6 +129,13 @@ export default function panelgame() {
                         </span>
                     </div>
                 ))}
+
+                <div className="flex justify-between border-b border-gray-200 py-2">
+                    <span className="text-gray-600">Price</span>
+                    <span className="text-gray-900 font-medium">
+                        {formatCurrency(mitra_sell.toString())}
+                    </span>
+                </div>
 
             </ProcessBayar>
 

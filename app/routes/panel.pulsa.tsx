@@ -123,7 +123,7 @@ export default function PanelPulsa() {
             <input name="intent" value="intent" hidden readOnly />
             <input name="json" value={JSON.stringify(form)} hidden readOnly />
 
-            {Object.entries(pickKeys(form.product || {}, ['name', 'code', 'price'] as any)).map(([key, value]) => (
+            {Object.entries(pickKeys(form.product || {}, ['name', 'code'] as any)).map(([key, value]) => (
                 <div key={key} className="flex justify-between border-b border-gray-200 py-2">
                     <span className="text-gray-600">{key.split("_").join(" ")}</span>
                     <span className="text-gray-900 font-medium">
@@ -131,6 +131,13 @@ export default function PanelPulsa() {
                     </span>
                 </div>
             ))}
+
+            <div className="flex justify-between border-b border-gray-200 py-2">
+                <span className="text-gray-600">Price</span>
+                <span className="text-gray-900 font-medium">
+                    {formatCurrency(mitra_sell.toString())}
+                </span>
+            </div>
 
         </ProcessBayar>
 
@@ -232,15 +239,15 @@ export function CardProduct({ data, active, setForm }: { data?: typeof productTa
 
     const { mitra_sell, price_sell } = calculateProfit(data)
     const isDisable = !isTimeNotWithinRange(data.data?.start_cut_off || "0:0", data.data?.end_cut_off || '0:0')
-    if(isDisable) return null
+    if (isDisable) return null
 
     return <div
         onClick={() => {
-            if(isDisable) return 
+            if (isDisable) return
             setForm((cur: any) => ({ ...cur, product: data }))
         }}
         className={cn(
-            "p-4 rounded-lg cursor-pointer border-2", 
+            "p-4 rounded-lg cursor-pointer border-2",
             active ? "border-blue-500" : "",
             isDisable ? "bg-red-100 border-red-500" : ""
         )}
@@ -248,7 +255,7 @@ export function CardProduct({ data, active, setForm }: { data?: typeof productTa
         <div className="font-bold">{data.name}</div>
         <div className="flex gap-4 justify-between mt-1 border-t pt-1 text-xs">
             <div>{formatCurrency(mitra_sell.toFixed(0))}</div>
-            {isDisable ? <div>{data.data?.start_cut_off} {data.data?.end_cut_off}</div> : <div>Rek Jual : {formatCurrency(price_sell.toFixed(0))}</div> }
+            {isDisable ? <div>{data.data?.start_cut_off} {data.data?.end_cut_off}</div> : <div>Rek Jual : {formatCurrency(price_sell.toFixed(0))}</div>}
         </div>
     </div>
 }
