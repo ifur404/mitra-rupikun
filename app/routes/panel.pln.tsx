@@ -54,7 +54,7 @@ export default function PanelPulsa() {
                 <Label htmlFor="customer_no">No. Meter/ID Pel</Label>
                 <div className="flex gap-2 items-center">
                     <Input name="customer_no" value={form.customer_no} onChange={(e) => {
-                        setForm(cur => ({ ...cur, customer_no: e.target.value }))
+                        setForm(cur => ({ ...cur, customer_no: e.target.value.replace(/[^0-9]/g, "") }))
                     }} placeholder="contoh: 14488987581" />
                 </div>
             </div>
@@ -78,7 +78,7 @@ export default function PanelPulsa() {
                     </span>
                 </div>
             ))}
-
+            
             <div className="flex justify-between border-b border-gray-200 py-2">
                 <span className="text-gray-600">Price</span>
                 <span className="text-gray-900 font-medium">

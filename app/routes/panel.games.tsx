@@ -85,7 +85,7 @@ export default function panelgame() {
                             <Label htmlFor="game_id">Game ID : </Label>
                             <div className="flex justify-between gap-4">
                                 <Input name="game_id" value={form.game_id} onChange={(e) => {
-                                    setForm(cur => ({ ...cur, game_id: e.target.value }))
+                                    setForm(cur => ({ ...cur, game_id: e.target.value.replace(/[^0-9]/g, "") }))
                                 }} placeholder="Game ID: 987654321" />
 
                                 <OpenSample>
@@ -158,10 +158,10 @@ function FormMobileLegend({ onChange }: { onChange: (d: string) => void }) {
         <Label htmlFor="game_id">Game ID : </Label>
         <div className="flex justify-between gap-4">
             <Input name="user_id" value={myForm.user_id} onChange={(e) => {
-                setMyForm(cur => ({ ...cur, user_id: e.target.value }))
+                setMyForm(cur => ({ ...cur, user_id: e.target.value.replace(/[^0-9]/g, "") }))
             }} placeholder="User ID: 123456789" />
             <Input name="zone_id" value={myForm.zone_id} onChange={(e) => {
-                setMyForm(cur => ({ ...cur, zone_id: e.target.value }))
+                setMyForm(cur => ({ ...cur, zone_id: e.target.value.replace(/[^0-9]/g, "") }))
             }} placeholder="Zone ID: 1234" />
             <OpenSample>
                 <img src="/assets/sample_profile_ml.png" alt="Sample ML" className="w-full" />

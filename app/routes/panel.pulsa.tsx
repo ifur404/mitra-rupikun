@@ -92,7 +92,7 @@ export default function PanelPulsa() {
                 <Label htmlFor="customer_no">No tujuan : </Label>
                 <div className="flex gap-2 items-center">
                     <Input name="customer_no" value={form.customer_no} onChange={(e) => {
-                        setForm(cur => ({ ...cur, customer_no: e.target.value }))
+                        setForm(cur => ({ ...cur, customer_no: e.target.value.replace(/[^0-9]/g, "") }))
                     }} placeholder="contoh: 082122012952" />
                 </div>
             </div>
