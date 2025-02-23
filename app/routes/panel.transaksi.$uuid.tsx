@@ -94,11 +94,11 @@ function RenderTopUp({ data }: { data: TDataLedger | null }) {
     if(data?.topup){
         return <div className="p-4 rounded-lg border">
             {Object.entries(data?.topup || {}).map(([key, value]) => (
-                <div key={key} className="flex justify-between border-b border-gray-200 py-2">
-                    <span className="text-gray-600">{key.split("_").join(" ")}</span>
-                    <span className="text-gray-900 font-medium">
+                <div key={key} className="border-b border-gray-200 py-2">
+                    <p className="text-gray-600">{key.split("_").join(" ")}</p>
+                    <p className="text-gray-900 font-medium text-right break-all">
                         {formatValue(key, value)}
-                    </span>
+                    </p>
                 </div>
             ))}
         </div>
@@ -112,11 +112,11 @@ function RenderDigiFlazz({ data }: { data: TDataLedger | null }) {
     if (data.response?.status === "Gagal" && !("done" in data)) {
         return <div className="p-4 rounded-lg border">
             {Object.entries(pickKeys(data.response, ['customer_no', 'buyer_sku_code', 'message', 'status', 'price'])).map(([key, value]) => (
-                <div key={key} className="flex justify-between border-b border-gray-200 py-2">
-                    <span className="text-gray-600">{key.split("_").join(" ")}</span>
-                    <span className="text-gray-900 font-medium">
+                <div key={key} className="border-b border-gray-200 py-2">
+                    <p className="text-gray-600">{key.split("_").join(" ")}</p>
+                    <p className="text-gray-900 font-medium text-right break-all">
                         {formatValue(key, value)}
-                    </span>
+                    </p>
                 </div>
             ))}
         </div>
@@ -133,11 +133,11 @@ function RenderDigiFlazz({ data }: { data: TDataLedger | null }) {
 
             <div className="p-4 rounded-lg border">
                 {Object.entries(pickKeys(data.response, ['customer_no', 'buyer_sku_code', 'message', 'status', 'price'])).map(([key, value]) => (
-                    <div key={key} className="flex justify-between border-b border-gray-200 py-2">
-                        <span className="text-gray-600">{key.split("_").join(" ")}</span>
-                        <span className="text-gray-900 font-medium">
+                    <div key={key} className="border-b border-gray-200 py-2">
+                        <p className="text-gray-600">{key.split("_").join(" ")}</p>
+                        <p className="text-gray-900 font-medium text-right break-all">
                             {formatValue(key, value)}
-                        </span>
+                        </p>
                     </div>
                 ))}
             </div>
@@ -158,11 +158,11 @@ function RenderDigiFlazz({ data }: { data: TDataLedger | null }) {
 
             <div className="p-4 rounded-lg border">
                 {Object.entries(pickKeys(data.webhook, ['customer_no', 'buyer_sku_code', 'message', 'sn', 'price'])).map(([key, value]) => (
-                    <div key={key} className="flex justify-between border-b border-gray-200 py-2">
-                        <span className="text-gray-600">{key.split("_").join(" ")}</span>
-                        <span className="text-gray-900 font-medium">
+                    <div key={key} className="border-b border-gray-200 py-2">
+                        <p className="text-gray-600">{key.split("_").join(" ")}</p>
+                        <p className="text-gray-900 font-medium text-right break-all">
                             {formatValue(key, value)}
-                        </span>
+                        </p>
                     </div>
                 ))}
             </div>
