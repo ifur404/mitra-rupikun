@@ -53,7 +53,7 @@ export default function PanelHome() {
           </div>
         </div>
         <div className="border p-2 rounded-lg space-y-2">
-          <p className="text-xs">Profit</p>
+          <p className="text-xs">Perhitungan Profit</p>
           {/* <div className="text-2xl font-bold">{formatCurrency("0")}</div> */}
           <div className="text-xl font-bold">{formatCurrency(loaderData.profit.toString())}</div>
           {/* <p className="text-xs"></p> */}
