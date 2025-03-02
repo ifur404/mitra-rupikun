@@ -57,7 +57,7 @@ const collums: ColumnDef<TData>[] = [
         header: "ID"
     },
     {
-        cell: (d) => <OpenDetail str={JSON.stringify(d.row.original.data)} view="textarea" />,
+        cell: (d) => <OpenDetail str={JSON.stringify(d.row.original.data, null, 2)} view="textarea" />,
         header: "Data"
     },
     {
