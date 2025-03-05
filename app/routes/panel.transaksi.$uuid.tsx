@@ -15,6 +15,7 @@ import { useFetcher } from "@remix-run/react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { sendIpurNotification } from "~/lib/telegram.server";
+import invariant from 'tiny-invariant';
 
 export async function loader(req: LoaderFunctionArgs) {
     const user = await allowAny(req)
@@ -46,19 +47,28 @@ export async function action(req: ActionFunctionArgs) {
         status: 404,
         statusText: "Not Found",
     });
-
-    const formData = await req.request.formData()
-    const datanya = {
-        ...transaction?.data,
-        complain: formData.get('complain')?.toString() || ''
-    }
-    await mydb.update(ledgerTable).set({
-        data: datanya
-    }).where(eq(ledgerTable.id, transaction.id))
-
-    await sendIpurNotification(`Complain \n${JSON.stringify(datanya)}`, req.context.cloudflare.env.TELEGRAM_TOKEN)
-    return {
-        success: true
+    try {
+        const formData = await req.request.formData()
+        const complain = String(formData.get('complain'))
+        invariant(complain.length > 5, "Minimal 5 karakter")
+        const datanya = {
+            ...transaction?.data,
+            complain: complain
+        }
+        await mydb.update(ledgerTable).set({
+            data: datanya
+        }).where(eq(ledgerTable.id, transaction.id))
+    
+        await sendIpurNotification(`Complain \n${JSON.stringify(datanya)}`, req.context.cloudflare.env.TELEGRAM_TOKEN)
+        return {
+            success: true
+        }
+        
+    } catch (error) {
+        if (error instanceof Error) {
+            return { error: error?.message }
+        }
+        return { error: "Unknown error occurred" }
     }
 }
 
@@ -80,7 +90,8 @@ export default function PanelLegdger() {
 
             <fetcher.Form method="POST" className="p-4 rounded-lg border space-y-2">
                 <Label htmlFor="Komplen">Ajukan Keluhan :</Label>
-                <Textarea placeholder="Komplen...." name="complain" defaultValue={loaderData.transaction.data?.complain || ''}/>
+                <Textarea required placeholder="Komplen...." name="complain" defaultValue={loaderData.transaction.data?.complain || ''}/>
+                {fetcher.data?.error ? <p className="text-red-500 text-xs">{fetcher.data.error}</p> : null}
                 <div className="flex justify-center items-center">
                     <Button type="submit">Submit</Button>
                 </div>
