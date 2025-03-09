@@ -16,6 +16,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import { sendIpurNotification } from "~/lib/telegram.server";
 import invariant from 'tiny-invariant';
+import { formatCurrency } from "~/components/InputCurrency";
 
 export async function loader(req: LoaderFunctionArgs) {
     const user = await allowAny(req)
@@ -122,7 +123,7 @@ function RenderDigiFlazz({ data }: { data: TDataLedger | null }) {
     if(!Object.keys(data).some(e=> LIST_KEYS.includes(e?.toLowerCase() as any))) return null
     if (data.response?.status === "Gagal" && !("done" in data)) {
         return <div className="p-4 rounded-lg border">
-            {Object.entries(pickKeys(data.response, ['customer_no', 'buyer_sku_code', 'message', 'status', 'price'])).map(([key, value]) => (
+            {Object.entries(pickKeys(data.response, ['customer_no', 'buyer_sku_code', 'message', 'status'])).map(([key, value]) => (
                 <div key={key} className="border-b border-gray-200 py-2">
                     <p className="text-gray-600">{key.split("_").join(" ")}</p>
                     <p className="text-gray-900 font-medium text-right break-all">
@@ -130,6 +131,12 @@ function RenderDigiFlazz({ data }: { data: TDataLedger | null }) {
                     </p>
                 </div>
             ))}
+            <div className="border-b border-gray-200 py-2">
+                <p className="text-gray-600">Harga</p>
+                <p className="text-gray-900 font-medium text-right break-all">
+                    {formatCurrency(String(data.calculate?.price_sell))}
+                </p>
+            </div>
         </div>
     }
 

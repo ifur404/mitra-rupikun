@@ -5,6 +5,7 @@ import { productTable, ledgerTable } from "~/drizzle/schema";
 import { calculateProfit } from "~/routes/panel.pulsa";
 import { TAuth } from "./auth.server";
 import { Digiflazz } from "./digiflazz.server";
+import { error } from "node:console";
 
 
 export async function processDigi(env: Env, user: TAuth, form: any, key_form: 'pulsa' | 'emoney' | 'games' | 'pln' ="pulsa") {
@@ -54,5 +55,5 @@ export async function processDigi(env: Env, user: TAuth, form: any, key_form: 'p
         }
         return { error: "Saldo tidak cukup, silahkan topup terlebih dahulu", };
     }
-    throw new Error("Failed");
+    return {error: "Failed, silahkan coba lagi nanti"}
 }

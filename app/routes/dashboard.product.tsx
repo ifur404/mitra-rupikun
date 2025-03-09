@@ -155,7 +155,7 @@ export async function action(req: ActionFunctionArgs) {
                         price: e.price,
                         category,
                         data: e.data, 
-                        updated_at: Date.now(),
+                        updated_at: new Date().getTime(),
                         updated_by: user.id,
                       },
                     });

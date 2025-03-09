@@ -12,7 +12,7 @@ export async function loader(req: LoaderFunctionArgs) {
       // In SSE, you typically send `event`, `data`, or both.
       // `remix-utils` will JSON-stringify automatically if you provide an object.
       // But here, we’re just sending the current timestamp as `data`.
-      send({ data: Date.now().toString() });
+      send({ data: new Date().toISOString() });
     };
 
     // This "connection" event is presumably an internal event.

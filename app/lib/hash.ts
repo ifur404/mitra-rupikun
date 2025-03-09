@@ -34,7 +34,7 @@ export class HashGenerator {
    * Generates a unique identifier with timestamp
    */
   createTimeBasedHash(id: string | number, options: HashOptions = {}): string {
-    const timestamp = Date.now();
+    const timestamp = new Date().getTime();
     return this.createHash(`${id}-${timestamp}`, options);
   }
 
